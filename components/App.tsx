@@ -1,11 +1,18 @@
-import Sidebar from "./sidebar"
+import Header from './header'
+import React from "react"
+import dynamic from "next/dynamic"
 
-const App = function() {
-    return (
+
+const StlViewer = dynamic(() => import('./stlViewer'))
+
+export class App extends React.Component {
+    render() {
+        return (
         <div>
-            <Sidebar />
+            {/* <Sidebar /> */}
+            <Header />
+            <StlViewer />
         </div>
-    )
+    )}
 }
 
-export default App 
