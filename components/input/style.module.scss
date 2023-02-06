@@ -1,7 +1,10 @@
 .InputComponent {
     display: flex;
-    color: white;
     padding: 25px;
     width: 450px;
     justify-content: space-between;
+}
+
+.InputName {
+    color: white;
 }

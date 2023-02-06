@@ -1,9 +1,5 @@
 import Header from './header'
 import React from "react"
-import dynamic from "next/dynamic"
-
-
-const StlViewer = dynamic(() => import('./stlViewer'))
 
 export class App extends React.Component {
     render() {
@@ -11,8 +7,6 @@ export class App extends React.Component {
         <div>
             {/* <Sidebar /> */}
             <Header />
-            <StlViewer />
         </div>
     )}
 }
-
