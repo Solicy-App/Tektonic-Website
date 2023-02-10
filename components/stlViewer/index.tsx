@@ -6,10 +6,10 @@ import { TransformControls } from "three/examples/jsm/controls/TransformControls
 import { createAnimate } from './stlHelpers/animate';
 import { centerGroup } from './stlHelpers/centerGroup';
 import { ArrowHelper, Vector3 } from 'three';
+import { getIntersectObjectsOfClick } from './stlHelpers/getIntersectObjectsOfClick';
 
 const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
-
 
 const wings = {
 	wing1: {
@@ -50,6 +50,7 @@ const addCorePieces = function (
 	scene: THREE.Scene, loader: Loader,
 	wing: any,
 	transformControls: TransformControls,
+	collection: any,
 ) {
 	const coreModelPath = '/assets/tektonicCoreParts/CoreStep.stl'
 	const whiteTexture = '/assets/whiteTextureBasic.jpg'
@@ -108,6 +109,7 @@ const addCorePieces = function (
 		// scene.add(box);
 	});
 
+	collection[group.uuid] = group;
 	scene.attach(group);
 	transformControls.detach();
 	transformControls.attach(group);
@@ -117,11 +119,12 @@ const addCorePieces = function (
 
 export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/assets/Lyn.stl', pathToModelTexture = '/assets/whiteTextureBasic.jpg' }) {
 	const containerRef = useRef();
-	let transformControls = undefined;
+	let transformControls: TransformControls = undefined;
 	let orbitControls = undefined;
 	let scene = undefined;
 	let camera = undefined;
 	let renderer = undefined;
+	const pieces = {};
 
 	useEffect(() => {
 		scene = new THREE.Scene();
@@ -151,8 +154,23 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 		orbitControls.minDistance = 125;
 		initTransformControls();
 
+		addEvents();
+
 		// const axesHelper = new THREE.AxesHelper( 100 );
 		// scene.add( axesHelper );
+	}
+
+	const handleClick = (event) => {
+		const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, Object.values(pieces));
+		if (intersects.length) {
+			transformControls.attach(intersects[0].object.parent);
+		} else {
+			transformControls.detach();
+		}
+	}
+
+	const addEvents = () => {
+		renderer.domElement.addEventListener('click', handleClick);
 	}
 
 	const initTransformControls = () => {
@@ -195,23 +213,11 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 	}
 
 	const handleDblClick = (event, mesh) => {
-		let clickMouse = new THREE.Vector2();
-
-		clickMouse.x = (event.clientX / sizeX) * 2 - 1;
-		clickMouse.y = -(event.clientY / sizeY) * 2 + 1;
-
-		const raycaster = new THREE.Raycaster();
-		raycaster.setFromCamera(clickMouse, camera);
-
-		// var arrow = new THREE.ArrowHelper( raycaster.ray.direction, raycaster.ray.origin, 800, 0xff0000 );
-		// scene.add( arrow );
-
-		console.log(mesh);
-		const intersects = raycaster.intersectObjects([mesh]);
+		const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, [mesh]);
 		if (intersects.length > 0) { // clicked on model or no
 			let intersect = intersects[0];
 			//show core screw/(implant) pices
-			addCorePieces(intersect, scene, loader, wings.wing5, transformControls);
+			addCorePieces(intersect, scene, loader, wings.wing5, transformControls, pieces);
 		}
 	}
 
@@ -228,11 +234,7 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 			zIndex: 1,
 			color: '#ffffff'
 		}}>
-			"W" translate | "E" rotate | "R" scale | "+/-" adjust size<br />
-			"Q" toggle world/local space |  "Shift" snap to grid<br />
-			"X" toggle X | "Y" toggle Y | "Z" toggle Z | "Spacebar" toggle enabled<br />
-			"Esc" reset current transform<br />
-			"C" toggle camera | "V" random zoom
+			"W" translate | "E" rotate | "R" scale
 		</div>
 		<div ref={containerRef} />
 	</>);
