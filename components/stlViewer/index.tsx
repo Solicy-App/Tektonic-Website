@@ -1,59 +1,25 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { STLLoader as Loader } from "three/examples/jsm/loaders/STLLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { TransformControls } from "three/examples/jsm/controls/TransformControls";
+import { STLLoader as Loader } from 'three/examples/jsm/loaders/STLLoader';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import { createAnimate } from './stlHelpers/animate';
 import { centerGroup } from './stlHelpers/centerGroup';
-import { ArrowHelper, Vector3 } from 'three';
 import { getIntersectObjectsOfClick } from './stlHelpers/getIntersectObjectsOfClick';
 
 const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
 
-const wings = {
-	wing1: {
-		path: '/assets/tektonicWings/tectonic_long.stl' ,
-		rotations: {x: 1.3, y: 0.2},
-		scale: 0.8,
-		movedPos: {x: 4}
-	},
-	wing2: {
-		path: '/assets/tektonicWings/tectonic_angle1.stl' ,
-		rotations: {x: 1.3, y: 0.2},
-		scale: 0.8,
-		movedPos: {x: -1, z: -2, y: -2}
-	},
-	wing3: {
-		path: '/assets/tektonicWings/tectonic_angle2.stl' ,
-		rotations: {x: 1.1, y: 0.2},
-		scale: 0.8,
-		movedPos: {x: 1, z: 0, y: -2}
-	},
-	wing4: {
-		path: '/assets/tektonicWings/tectonic_single.stl' ,
-		rotations: {x: 1.1, y: 0.2},
-		scale: 0.8,
-		movedPos: {x: -3, z: 1, y: -2}
-	},
-	wing5: {
-		path: '/assets/tektonicWings/tectonic_straight.stl' ,
-		rotations: {x: 1.1, y: 0.2},
-		scale: 0.8,
-		movedPos: {x: 0.5, z: 0.5, y: -2}
-	},
-}
-
 // will add core paces to model
-const addCorePieces = function (
+const addCorePieces = function(
 	intersect: THREE.Intersection<THREE.Object3D<THREE.Event>>,
 	scene: THREE.Scene, loader: Loader,
 	wing: any,
 	transformControls: TransformControls,
-	collection: any,
+	collection: any
 ) {
-	const coreModelPath = '/assets/tektonicCoreParts/CoreStep.stl'
-	const whiteTexture = '/assets/whiteTextureBasic.jpg'
+	const coreModelPath = '/assets/tektonicCoreParts/CoreStep.stl';
+	const whiteTexture = '/assets/whiteTextureBasic.jpg';
 	let coreModelMesh = undefined;
 	let wingModelMesh = undefined;
 
@@ -68,7 +34,7 @@ const addCorePieces = function (
 		coreModelMesh = new THREE.Mesh(geometry, material);
 		coreModelMesh.geometry.computeVertexNormals();
 		coreModelMesh.geometry.center();
-		coreModelMesh.position.copy(intersect.point)
+		coreModelMesh.position.copy(intersect.point);
 		coreModelMesh.rotation.z = 1.65;  // will add some rotation
 		coreModelMesh.rotation.x = -0.3;   // rotate model of core element
 		coreModelMesh.geometry.center();
@@ -85,23 +51,23 @@ const addCorePieces = function (
 		wingModelMesh = new THREE.Mesh(geometry, material);
 		wingModelMesh.geometry.computeVertexNormals();
 		wingModelMesh.geometry.center();
-		wingModelMesh.position.copy(intersect.point)
+		wingModelMesh.position.copy(intersect.point);
 		// rotations
 		wingModelMesh.rotation.y = wing?.rotations.y;  // will add some rotation
 		wingModelMesh.rotation.x = wing?.rotations.x;   // rotate model of core element
 
 		//possitions
 		if (wing?.movedPos.x)
-			wingModelMesh.position.x += wing?.movedPos.x
+			wingModelMesh.position.x += wing?.movedPos.x;
 		if (wing?.movedPos.y)
-			wingModelMesh.position.y += wing?.movedPos.y
+			wingModelMesh.position.y += wing?.movedPos.y;
 		if (wing?.movedPos.z)
-			wingModelMesh.position.z += wing?.movedPos.z
+			wingModelMesh.position.z += wing?.movedPos.z;
 
 		// scales
-		wingModelMesh.scale.x = wing?.scale || 0.7
-		wingModelMesh.scale.y = wing?.scale || 0.7
-		wingModelMesh.scale.z = wing?.scale || 0.7
+		wingModelMesh.scale.x = wing?.scale || 0.7;
+		wingModelMesh.scale.y = wing?.scale || 0.7;
+		wingModelMesh.scale.z = wing?.scale || 0.7;
 
 		group.attach(wingModelMesh);
 		centerGroup(group);
@@ -114,10 +80,16 @@ const addCorePieces = function (
 	transformControls.detach();
 	transformControls.attach(group);
 	scene.attach(transformControls);
-}
+};
 
 
-export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/assets/Lyn.stl', pathToModelTexture = '/assets/whiteTextureBasic.jpg' }) {
+export default function StlViewer({
+	sizeX = 1500,
+	sizeY = 1000,
+	pathToModel = '/assets/Lyn.stl',
+	pathToModelTexture = '/assets/whiteTextureBasic.jpg',
+	activeWing
+}) {
 	const containerRef = useRef();
 	let transformControls: TransformControls = undefined;
 	let orbitControls = undefined;
@@ -158,7 +130,7 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 
 		// const axesHelper = new THREE.AxesHelper( 100 );
 		// scene.add( axesHelper );
-	}
+	};
 
 	const handleClick = (event) => {
 		const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, Object.values(pieces));
@@ -167,11 +139,11 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 		} else {
 			transformControls.detach();
 		}
-	}
+	};
 
 	const addEvents = () => {
 		renderer.domElement.addEventListener('click', handleClick);
-	}
+	};
 
 	const initTransformControls = () => {
 		transformControls = new TransformControls(camera, renderer.domElement);
@@ -179,22 +151,22 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 		transformControls.addEventListener('change', () => {
 			renderer.render(scene, camera);
 		});
-		transformControls.addEventListener('dragging-changed', event => orbitControls.enabled = ! event.value);
+		transformControls.addEventListener('dragging-changed', event => orbitControls.enabled = !event.value);
 
-		window.addEventListener( 'keydown', event => {
-			switch ( event.keyCode ) {
+		window.addEventListener('keydown', event => {
+			switch (event.keyCode) {
 				case 87: // W
-					transformControls.setMode( 'translate' );
+					transformControls.setMode('translate');
 					break;
 				case 69: // E
-					transformControls.setMode( 'rotate' );
+					transformControls.setMode('rotate');
 					break;
 				case 82: // R
-					transformControls.setMode( 'scale' );
+					transformControls.setMode('scale');
 					break;
 			}
 		});
-	}
+	};
 
 	const renderModel = () => {
 		loader.load(pathToModel, (geometry) => {
@@ -211,27 +183,27 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 			// scene.add(box);
 			scene.add(mesh);
 		});
-	}
+	};
 
 	const handleDblClick = (event, mesh) => {
 		const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, [mesh]);
 		if (intersects.length > 0) { // clicked on model or no
 			let intersect = intersects[0];
 			//show core screw/(implant) pices
-			addCorePieces(intersect, scene, loader, wings.wing5, transformControls, pieces);
+			addCorePieces(intersect, scene, loader, activeWing, transformControls, pieces);
 		}
-	}
+	};
 
 	return (<>
-		<div id="info" style={{
-			position: "absolute",
-			top: "0px",
-			width: "100%",
-			padding: "10px",
-			boxSizing: "border-box",
-			textAlign: "center",
-			userSelect: "none",
-			pointerEvents: "none",
+		<div id='info' style={{
+			position: 'absolute',
+			top: '0px',
+			width: '100%',
+			padding: '10px',
+			boxSizing: 'border-box',
+			textAlign: 'center',
+			userSelect: 'none',
+			pointerEvents: 'none',
 			zIndex: 1,
 			color: '#ffffff'
 		}}>
