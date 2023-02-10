@@ -175,6 +175,7 @@ export default function StlViewer({ sizeX = 1500, sizeY = 1000, pathToModel = '/
 
 	const initTransformControls = () => {
 		transformControls = new TransformControls(camera, renderer.domElement);
+		transformControls.space = 'local';
 		transformControls.addEventListener('change', () => {
 			renderer.render(scene, camera);
 		});
