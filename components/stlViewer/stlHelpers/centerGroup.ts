@@ -23,6 +23,11 @@ export const centerGroup = (group) => {
 	group.position.set(center.x, center.y, center.z);
 
 	group.children.forEach(mesh => {
-		mesh.position.set(0,0,0);
+		const oldPos = mesh.position.clone();
+		mesh.position.set(
+			oldPos.x - center.x,
+			oldPos.y - center.y,
+			oldPos.z - center.z
+		);
 	})
 }

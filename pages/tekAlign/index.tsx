@@ -4,7 +4,7 @@ import { TekAlignPageContent } from 'components/tekAlignPageContent';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
-const StlViewer = dynamic(() => import('components/stlViewer'));
+import StlViewer from 'components/stlViewer';
 
 const wings = [
 	{
