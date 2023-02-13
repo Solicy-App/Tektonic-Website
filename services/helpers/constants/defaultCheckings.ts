@@ -1,4 +1,4 @@
-import { DefaultBiowallCheckings, DefaultCoilChecking } from "helpers/types";
+import { DefaultBiowallCheckings, DefaultCoilChecking } from "../types/index";
 
 export const defaultBiowallCheckings: DefaultBiowallCheckings = {
   isIntactPassesCorrect: false,
