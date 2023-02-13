@@ -203,9 +203,9 @@ export default function StlViewer({
 				wingModelMesh.position.z += activeWing?.movedPos.z;
 
 			// scales
-			wingModelMesh.scale.x = activeWing?.scale || 0.7;
-			wingModelMesh.scale.y = activeWing?.scale || 0.7;
-			wingModelMesh.scale.z = activeWing?.scale || 0.7;
+			wingModelMesh.scale.x = activeWing?.scale || 0.4;
+			wingModelMesh.scale.y = activeWing?.scale || 0.4;
+			wingModelMesh.scale.z = activeWing?.scale || 0.4;
 
 			group.attach(wingModelMesh);
 			centerGroup(group);
