@@ -12,7 +12,7 @@ const wings = [
 		preview: '/assets/tektonicWings/tectonic_angle1_preview.png',
 		name: 'angle1',
 		rotations: { x: 1.3, y: 0.2 },
-		scale: 0.4,
+		scale: 0.7,
 		movedPos: { x: 4 }
 	},
 	{
@@ -20,7 +20,7 @@ const wings = [
 		preview: '/assets/tektonicWings/tectonic_angle2_preview.png',
 		name: 'angle2',
 		rotations: { x: 1.3, y: 0.2 },
-		scale: 0.4,
+		scale: 0.7,
 		movedPos: { x: -1, z: -2, y: -2 }
 	},
 	{
@@ -36,7 +36,7 @@ const wings = [
 		preview: '/assets/tektonicWings/tectonic_single_preview.png',
 		name: 'single tectonic',
 		rotations: { x: 1.1, y: 0.2 },
-		scale: 0.4,
+		scale: 0.7,
 		movedPos: { x: -3, z: 1, y: -2 }
 	},
 	{
@@ -44,7 +44,7 @@ const wings = [
 		preview: '/assets/tektonicWings/tectonic_straight_preview.png',
 		name: 'straight tec...',
 		rotations: { x: 1.1, y: 0.2 },
-		scale: 0.4,
+		scale: 0.7,
 		movedPos: { x: 0.5, z: 0.5, y: -2 }
 	}
 ];
