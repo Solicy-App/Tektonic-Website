@@ -6,6 +6,10 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { createAnimate } from './stlHelpers/animate';
 import { centerGroup } from './stlHelpers/centerGroup';
 import { getIntersectObjectsOfClick } from './stlHelpers/getIntersectObjectsOfClick';
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter';
+import GUI from 'lil-gui';
+import { saveArrayBuffer, saveString } from './stlHelpers/exportHelpers';
+import { Object3D } from 'three';
 
 const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
@@ -27,6 +31,11 @@ export default function StlViewer({
 	const [pieces, setPieces] = useState({});
 	const [draggingControl, setDraggingControl] = useState(false);
 
+	const [exporter, setExporter] = useState<STLExporter>(undefined);
+	const [gui, setGui] = useState<GUI>(undefined);
+
+	const [downloadElement, setDownloadElement] = useState(undefined);
+
 	useEffect(() => {
 		setScene(new THREE.Scene());
 		setCamera(new THREE.PerspectiveCamera(
@@ -36,7 +45,70 @@ export default function StlViewer({
 			100000
 		));
 		setRenderer(new THREE.WebGLRenderer());
+
+		setGui(new GUI());
+		setExporter(new STLExporter());
+
+		setDownloadElement(document.createElement( 'a' ));
 	}, []);
+
+	useEffect(() => {
+		if (downloadElement) {
+			downloadElement.style.display = 'none';
+			document.body.appendChild(downloadElement);
+		}
+	}, [downloadElement]);
+
+	const piecesRef = useRef();
+	const downloadElementRef = useRef();
+	const exporterRef = useRef();
+	const sceneRef = useRef();
+	const coreModelRef = useRef();
+	coreModelRef.current = coreModelMesh;
+	sceneRef.current = scene;
+	// @ts-ignore
+	piecesRef.current = pieces;
+	downloadElementRef.current = downloadElement;
+	// @ts-ignore
+	exporterRef.current = exporter;
+
+	const exportASCII = () => {
+		let obj = Object.values(piecesRef.current)[0] as Object3D;
+		const tempGroup = new THREE.Group();
+
+		Object.values(piecesRef.current).forEach(p => {
+			// @ts-ignore
+			tempGroup.attach(p.clone() as Object3D);
+		});
+
+		// @ts-ignore
+		tempGroup.attach(coreModelRef.current.clone());
+
+		if (exporterRef.current != undefined && obj) {
+			// @ts-ignore
+			const result = exporterRef.current.parse(tempGroup);
+			saveString(result, 'box.stl', downloadElementRef.current);
+		}
+	};
+
+	function exportBinary() {
+		const result = exporter.parse( scene, { binary: true } );
+		saveArrayBuffer( result, 'box.stl', downloadElement );
+	}
+
+	useEffect(() => {
+		if (gui && exportASCII) {
+			gui.add({
+				exportASCII: exportASCII,
+				exportBinary: exportBinary
+			}, 'exportASCII').name('Export STL (ASCII)');
+			// gui.add({
+			// 	exportASCII: exportASCII,
+			// 	exportBinary: exportBinary
+			// }, 'exportBinary').name('Export STL (Binary)');
+			gui.open();
+		}
+	}, [gui]);
 
 	useEffect(() => {
 		const handleClick = (event) => {
@@ -133,6 +205,7 @@ export default function StlViewer({
 		}
 	}, [transformControls]);
 
+
 	const renderModel = () => {
 		loader.load(pathToModel, (geometry) => {
 			const material = new THREE.MeshMatcapMaterial({
@@ -209,8 +282,8 @@ export default function StlViewer({
 
 			group.attach(wingModelMesh);
 			centerGroup(group);
-			const box = new THREE.BoxHelper(group, 0xffff00);
-			scene.add(box);
+			// const box = new THREE.BoxHelper(group, 0xffff00);
+			// scene.add(box);
 		});
 
 		setPieces((prevPieces) => {

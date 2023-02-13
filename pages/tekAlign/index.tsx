@@ -2,7 +2,7 @@ import ToolBarPieces from 'components/stlViewerSubcomponents';
 import { TekAlignHeader } from 'components/tekAlignHeader';
 import { TekAlignPageContent } from 'components/tekAlignPageContent';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import StlViewer from 'components/stlViewer';
 
@@ -51,12 +51,18 @@ const wings = [
 
 export default function TekAlign() {
 	const [activeIndex, setActiveIndex] = useState(0);
+	const [windowWidth, setWindowWidth] = useState(1500);
+
+	useEffect(() => {
+		if (window != undefined)
+			setWindowWidth(window.innerWidth);
+	}, []);
 
 	return (
 		<div>
 			{/* <TekAlignHeader /> */}
 			{/* <TekAlignPageContent/>   */}
-			<StlViewer activeWing={wings[activeIndex]} />
+			<StlViewer sizeX={windowWidth} activeWing={wings[activeIndex]} />
 			<ToolBarPieces
 				wings={wings}
 				activeWingIndex={activeIndex}
