@@ -1,4 +1,4 @@
-## how to run ?
+## how to run ? 
 1.install all dependencies 
 ```
 npm i
