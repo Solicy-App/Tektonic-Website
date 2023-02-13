@@ -1,11 +1,12 @@
-import Sidebar from "./sidebar"
+import Header from './header'
+import React from "react"
 
-const App = function() {
-    return (
+export class App extends React.Component {
+    render() {
+        return (
         <div>
-            <Sidebar />
+            {/* <Sidebar /> */}
+            <Header />
         </div>
-    )
+    )}
 }
-
-export default App 

@@ -1,9 +1,6 @@
-import dynamic from 'next/dynamic'
+import { App } from 'components/App';
 
-
-const App = dynamic(() => import('components/App'))
-
-export default function Home() {
+export default function Index() {
 	return (
 		<App />
 	);

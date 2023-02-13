@@ -15,7 +15,7 @@ const withAuth = (WrappedComponent) => {
       if (accessToken) {
         return <WrappedComponent {...props} />;
       }
-      router.replace(navBarPaths.login);
+      // router.replace(navBarPaths.login); // redirect
     }
   };
 };
