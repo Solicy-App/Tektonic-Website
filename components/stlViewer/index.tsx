@@ -27,6 +27,7 @@ export default function StlViewer({
 	const [pieces, setPieces] = useState({});
 	const [draggingControl, setDraggingControl] = useState(false);
 
+
 	useEffect(() => {
 		setScene(new THREE.Scene());
 		setCamera(new THREE.PerspectiveCamera(
@@ -128,6 +129,18 @@ export default function StlViewer({
 					case 82: // R
 						transformControls.setMode('scale');
 						break;
+					case 68: // D
+						if (transformControls.object) {
+							setPieces((oldPice) =>  Object.keys(oldPice).reduce((obj, k) => {
+								if (k !== transformControls.object.uuid) {
+									obj[k] = oldPice[k];
+								}
+								return obj;
+								}, {}))
+							scene.remove(transformControls.object)
+							transformControls.detach();
+						}
+						break;
 				}
 			});
 		}
@@ -151,8 +164,8 @@ export default function StlViewer({
 		});
 	};
 
-// will add core paces to model
-	const addCorePieces = function(
+	// will add core paces to model
+	const addCorePieces = function (
 		intersect: THREE.Intersection<THREE.Object3D<THREE.Event>>,
 		scene: THREE.Scene, loader: Loader,
 	) {
@@ -209,8 +222,8 @@ export default function StlViewer({
 
 			group.attach(wingModelMesh);
 			centerGroup(group);
-			const box = new THREE.BoxHelper(group, 0xffff00);
-			scene.add(box);
+			// const box = new THREE.BoxHelper(group, 0xffff00);
+			// scene.add(box);
 		});
 
 		setPieces((prevPieces) => {
@@ -238,7 +251,7 @@ export default function StlViewer({
 			zIndex: 1,
 			color: '#ffffff'
 		}}>
-			"W" translate | "E" rotate | "R" scale
+			"W" translate | "E" rotate | "R" scale | "D" remove
 		</div>
 		<div ref={containerRef} />
 	</>);
