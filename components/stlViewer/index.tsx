@@ -68,7 +68,7 @@ export default function StlViewer({
 
 			renderer.setSize(sizeX, sizeY);
 			setOrbitControls(new OrbitControls(camera, renderer.domElement));
-
+			
 			// three js window
 			if (containerRef.current)
 				(containerRef.current as any).appendChild(renderer.domElement);
@@ -86,6 +86,11 @@ export default function StlViewer({
 			// zoom parameters how much can zoom
 			orbitControls.maxDistance = 450;
 			orbitControls.minDistance = 125;
+			orbitControls.mouseButtons = {
+				LEFT: THREE.MOUSE.ROTATE,
+				MIDDLE: THREE.MOUSE.PAN,
+				RIGHT: THREE.MOUSE.PAN,  // for now it's as the same like the middle button
+			};
 		}
 	}, [orbitControls]);
 
