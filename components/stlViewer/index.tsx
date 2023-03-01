@@ -11,8 +11,8 @@ const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
 
 export default function StlViewer({
-	sizeX = 1500,
-	sizeY = 1000,
+	sizeX = 1400,
+	sizeY = 1400,
 	pathToModel = '/assets/Lyn.stl',
 	pathToModelTexture = '/assets/whiteTextureBasic.jpg',
 	activeWing
@@ -26,7 +26,7 @@ export default function StlViewer({
 	const [coreModelMesh, setCoreModelMesh] = useState(null);
 	const [pieces, setPieces] = useState({});
 	const [draggingControl, setDraggingControl] = useState(false);
-
+	let scrollRotateEvent;
 
 	useEffect(() => {
 		setScene(new THREE.Scene());
@@ -43,9 +43,20 @@ export default function StlViewer({
 		const handleClick = (event) => {
 			if (!draggingControl) {
 				const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, Object.values(pieces));
+				const scrollRotate = (e) => {
+					e.preventDefault();
+					orbitControls.enableZoom = false;
+					intersects[0].object.parent.rotateY(0.1)
+
+					return
+				}
 				if (intersects.length) {
 					transformControls.attach(intersects[0].object.parent);
+					renderer.domElement.addEventListener('wheel', scrollRotate); 
+					scrollRotateEvent = scrollRotate;
 				} else {
+					orbitControls.enableZoom = true;
+					renderer.domElement.removeEventListener('wheel', scrollRotateEvent);
 					transformControls.detach();
 				}
 			}
@@ -68,7 +79,7 @@ export default function StlViewer({
 
 			renderer.setSize(sizeX, sizeY);
 			setOrbitControls(new OrbitControls(camera, renderer.domElement));
-
+			
 			// three js window
 			if (containerRef.current)
 				(containerRef.current as any).appendChild(renderer.domElement);
@@ -86,6 +97,11 @@ export default function StlViewer({
 			// zoom parameters how much can zoom
 			orbitControls.maxDistance = 450;
 			orbitControls.minDistance = 125;
+			orbitControls.mouseButtons = {
+				LEFT: THREE.MOUSE.ROTATE,
+				MIDDLE: THREE.MOUSE.PAN,
+				RIGHT: THREE.MOUSE.PAN,  // for now it's as the same like the middle button
+			};
 		}
 	}, [orbitControls]);
 
@@ -111,7 +127,9 @@ export default function StlViewer({
 		if (transformControls) {
 			transformControls.space = 'local';
 			transformControls.addEventListener('change', () => {
+				console.log("changed")
 				renderer.render(scene, camera);
+			
 			});
 			transformControls.addEventListener('dragging-changed', event => {
 				orbitControls.enabled = !event.value;
@@ -157,9 +175,7 @@ export default function StlViewer({
 			mesh.geometry.center();
 			// will add click method to object
 			setCoreModelMesh(mesh);
-
-			// const box = new THREE.BoxHelper(mesh, 0xffff00);
-			// scene.add(box);
+			mesh.rotateY(0.5)
 			scene.add(mesh);
 		});
 	};
@@ -187,13 +203,13 @@ export default function StlViewer({
 			coreModelMesh.geometry.center();
 			coreModelMesh.position.copy(intersect.point);
 			coreModelMesh.rotation.z = 1.65;  // will add some rotation
-			coreModelMesh.rotation.x = -0.3;   // rotate model of core element
+			coreModelMesh.rotation.x = -0.1;   // rotate model of core element
+
 			coreModelMesh.geometry.center();
 
 			group.attach(coreModelMesh);
 		});
 
-		// const wingPartPath = '/assets/tektonicWings/tectonic_long.stl'
 		loader.load(activeWing.path, (geometry) => {
 			const material = new THREE.MeshMatcapMaterial({
 				color: 0xabdbe3, // color for texture
@@ -219,11 +235,8 @@ export default function StlViewer({
 			wingModelMesh.scale.x = activeWing?.scale || 0.7;
 			wingModelMesh.scale.y = activeWing?.scale || 0.7;
 			wingModelMesh.scale.z = activeWing?.scale || 0.7;
-
 			group.attach(wingModelMesh);
 			centerGroup(group);
-			// const box = new THREE.BoxHelper(group, 0xffff00);
-			// scene.add(box);
 		});
 
 		setPieces((prevPieces) => {
@@ -231,10 +244,11 @@ export default function StlViewer({
 			pieces[group.uuid] = group;
 			return pieces;
 		})
-		// pieces[group.uuid] = group;
+
+		const axis = new THREE.Vector3(0, 1, 1.5); // local Y/Z axis
+		group.rotateOnAxis(axis, 0.1);
 		scene.attach(group);
 		transformControls.detach();
-		transformControls.attach(group);
 		scene.attach(transformControls);
 	};
 
