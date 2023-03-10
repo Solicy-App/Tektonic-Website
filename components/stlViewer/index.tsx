@@ -52,7 +52,7 @@ export default function StlViewer({
 				}
 				if (intersects.length) {
 					transformControls.attach(intersects[0].object.parent);
-					renderer.domElement.addEventListener('wheel', scrollRotate); 
+					renderer.domElement.addEventListener('wheel', scrollRotate);
 					scrollRotateEvent = scrollRotate;
 				} else {
 					orbitControls.enableZoom = true;
@@ -79,7 +79,7 @@ export default function StlViewer({
 
 			renderer.setSize(sizeX, sizeY);
 			setOrbitControls(new OrbitControls(camera, renderer.domElement));
-			
+
 			// three js window
 			if (containerRef.current)
 				(containerRef.current as any).appendChild(renderer.domElement);
@@ -129,7 +129,7 @@ export default function StlViewer({
 			transformControls.addEventListener('change', () => {
 				console.log("changed")
 				renderer.render(scene, camera);
-			
+
 			});
 			transformControls.addEventListener('dragging-changed', event => {
 				orbitControls.enabled = !event.value;
@@ -144,17 +144,17 @@ export default function StlViewer({
 					case 69: // E
 						transformControls.setMode('rotate');
 						break;
-					case 82: // R
-						transformControls.setMode('scale');
-						break;
-					case 68: // D
+					// case 82: // R
+					// 	transformControls.setMode('scale');
+					// 	break;
+					case 46: // D
 						if (transformControls.object) {
-							setPieces((oldPice) =>  Object.keys(oldPice).reduce((obj, k) => {
+							setPieces((oldPice) => Object.keys(oldPice).reduce((obj, k) => {
 								if (k !== transformControls.object.uuid) {
 									obj[k] = oldPice[k];
 								}
 								return obj;
-								}, {}))
+							}, {}))
 							scene.remove(transformControls.object)
 							transformControls.detach();
 						}
