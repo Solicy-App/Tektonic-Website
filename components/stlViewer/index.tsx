@@ -30,27 +30,62 @@ export default function StlViewer({
 
 	useEffect(() => {
 		setScene(new THREE.Scene());
-		setCamera(new THREE.PerspectiveCamera(
+		const cam = new THREE.PerspectiveCamera(
 			750,
 			sizeX / sizeY,
 			10,
 			100000
-		));
+		)
+		setCamera(cam);
+
 		setRenderer(new THREE.WebGLRenderer());
 	}, []);
 
+	const changeCameraPosition = () => {
+		for (let i = 0; i < scene.children.length; i++) {
+			const core = scene.children[i];
+
+			if (core.type == 'Group') {
+				// core.lookAt(camera.position)
+				// console.log(core);
+			}
+		}
+	}
+
 	useEffect(() => {
 		const handleClick = (event) => {
+			changeCameraPosition()
 			if (!draggingControl) {
 				const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, Object.values(pieces));
 				const scrollRotate = (e) => {
 					e.preventDefault();
 					orbitControls.enableZoom = false;
-					intersects[0].object.parent.rotateY(0.1)
+
+					const pos = camera.position
+					let x = 0;
+					let y = 0;
+					let z = 0;
+					if (pos.x > pos.y && pos.x > pos.z) {
+						x = 0.1;
+						y = pos.y / (pos.x * 10)
+						z = pos.z / (pos.x * 10)
+					} else if (pos.y > pos.x && pos.y > pos.z) {
+						y = 0.1;
+						x = pos.y / (pos.y * 10)
+						z = pos.z / (pos.y * 10)
+					} else if (pos.z > pos.x && pos.z > pos.y) {
+						z = 0.1;
+						x = pos.y / (pos.z * 10)
+						z = pos.z / (pos.z * 10)
+					}
+					intersects[0].object.parent.rotateX(x)
+					intersects[0].object.parent.rotateY(y)
+					intersects[0].object.parent.rotateZ(z)
 
 					return
 				}
 				if (intersects.length) {
+
 					transformControls.attach(intersects[0].object.parent);
 					renderer.domElement.addEventListener('wheel', scrollRotate);
 					scrollRotateEvent = scrollRotate;
@@ -111,7 +146,8 @@ export default function StlViewer({
 			if (intersects.length > 0) { // clicked on model or no
 				let intersect = intersects[0];
 				//show core screw/(implant) pices
-				addCorePieces(intersect, scene, loader);
+				const core = addCorePieces(intersect, scene, loader);
+				setScene(core)
 			}
 		};
 
@@ -125,9 +161,15 @@ export default function StlViewer({
 
 	useEffect(() => {
 		if (transformControls) {
+			// const myCustomGizmo = new THREE.Object3D();
+			// // add your custom Gizmo objects to myCustomGizmo here
+
+			// const myCustomGizmoHelper = new THREE.GizmoHelper(myCustomGizmo);
+			// transformControls.gizmo = myCustomGizmoHelper;
 			transformControls.space = 'local';
 			transformControls.addEventListener('change', () => {
-				console.log("changed")
+
+
 				renderer.render(scene, camera);
 
 			});
@@ -143,6 +185,52 @@ export default function StlViewer({
 						break;
 					case 69: // E
 						transformControls.setMode('rotate');
+						const onClick = (event, meshes) => {
+							// calculate the mouse position in normalized device coordinates (-1 to +1)
+							const mouse = new THREE.Vector2(5, 2);
+							mouse.x = (event.clientX / 1400) * 2 - 1;
+							mouse.y = -(event.clientY / 1400) * 2 + 1;
+
+							// create a new raycaster
+							const raycaster = new THREE.Raycaster();
+
+							// set the raycaster's origin to the camera position
+							raycaster.setFromCamera(mouse, camera);
+
+							// calculate the intersections between the raycaster and the mesh
+							for (let i = 0; i < meshes.length; i++) {
+								const mesh = meshes[i];
+
+								const intersects = raycaster.intersectObject(mesh);
+
+								// if the mouse click intersects with the mesh, log a message to the console
+								if (intersects.length > 0) {
+									console.log(`clicked on the image! -> ${i}`);
+								}
+							}
+						}
+
+						const meshes = [];
+						const spriteMap = new THREE.TextureLoader().load('assets/point1.png');
+						const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
+						console.log(scene.children);
+						const len =  scene.children.length
+						for (let i = 1; i < scene.children.length - 1; i++) {
+							
+							const mesh = new THREE.Sprite(spriteMaterial);
+							mesh.scale.set(6, 2, 1);
+							const element = scene.children[i];
+
+
+							mesh.position.set(element.position.x, element.position.y + 8, element.position.z - 2);
+							meshes.push(mesh)
+						}
+						for (let i = 0; i < meshes.length; i++) {
+							const el = meshes[i];
+							scene.add(el);
+						}
+						renderer.domElement.addEventListener('click', (ev) => onClick(ev, meshes));
+						setTransformControls(transformControls);
 						break;
 					// case 82: // R
 					// 	transformControls.setMode('scale');
@@ -250,6 +338,7 @@ export default function StlViewer({
 		scene.attach(group);
 		transformControls.detach();
 		scene.attach(transformControls);
+		return scene
 	};
 
 	return (<>
