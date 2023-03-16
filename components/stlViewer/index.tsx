@@ -6,10 +6,12 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { createAnimate } from './stlHelpers/animate';
 import { centerGroup } from './stlHelpers/centerGroup';
 import { getIntersectObjectsOfClick } from './stlHelpers/getIntersectObjectsOfClick';
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 
 const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
-
+let mouseLeaveX
+let mouseLeaveY
 export default function StlViewer({
 	sizeX = 1400,
 	sizeY = 1400,
@@ -26,6 +28,8 @@ export default function StlViewer({
 	const [coreModelMesh, setCoreModelMesh] = useState(null);
 	const [pieces, setPieces] = useState({});
 	const [draggingControl, setDraggingControl] = useState(false);
+	const [meshesData, setMeshesData] = useState([]);
+
 	let scrollRotateEvent;
 
 	useEffect(() => {
@@ -128,6 +132,8 @@ export default function StlViewer({
 
 	useEffect(() => {
 		if (orbitControls) {
+			console.log(orbitControls, 'orbitControls');
+
 			// add controls to window
 			// zoom parameters how much can zoom
 			orbitControls.maxDistance = 450;
@@ -168,8 +174,6 @@ export default function StlViewer({
 			// transformControls.gizmo = myCustomGizmoHelper;
 			transformControls.space = 'local';
 			transformControls.addEventListener('change', () => {
-
-
 				renderer.render(scene, camera);
 
 			});
@@ -181,55 +185,203 @@ export default function StlViewer({
 			window.addEventListener('keydown', event => {
 				switch (event.keyCode) {
 					case 87: // W
+						transformControls.dragging = true
+						transformControls.enabled = true
+						transformControls.showX = true
+						transformControls.showY = true
+						transformControls.showZ = true
 						transformControls.setMode('translate');
-						break;
-					case 69: // E
-						transformControls.setMode('rotate');
-						const onClick = (event, meshes) => {
-							// calculate the mouse position in normalized device coordinates (-1 to +1)
-							const mouse = new THREE.Vector2(5, 2);
-							mouse.x = (event.clientX / 1400) * 2 - 1;
-							mouse.y = -(event.clientY / 1400) * 2 + 1;
+						console.log(transformControls, 'WWWWWWWWWWWWWWWWWWWWWWWWWWWW');
 
-							// create a new raycaster
-							const raycaster = new THREE.Raycaster();
+						for (let i = 0; i < scene.children.length; i++) {
+							const element = scene.children[i];
+							if (element.type == "Group") {
+								for (let j = 0; j < element.children.length; j++) {
+									const mesh = element.children[j]
 
-							// set the raycaster's origin to the camera position
-							raycaster.setFromCamera(mouse, camera);
-
-							// calculate the intersections between the raycaster and the mesh
-							for (let i = 0; i < meshes.length; i++) {
-								const mesh = meshes[i];
-
-								const intersects = raycaster.intersectObject(mesh);
-
-								// if the mouse click intersects with the mesh, log a message to the console
-								if (intersects.length > 0) {
-									console.log(`clicked on the image! -> ${i}`);
+									if (mesh.name == 'pointTop' || mesh.name == 'pointBottom') {
+										console.log(mesh, '>>>>>>>>>>>>>>>>>>>>>>>>>s');
+										scene.remove(mesh)
+									}
 								}
 							}
 						}
+						break;
+					case 69: // E
+						transformControls.setMode('translate');
+						transformControls.dragging = false
+						transformControls.showX = false
+						transformControls.showY = false
+						transformControls.showZ = false
+						console.log(scene, 'EEEEEEEEEEEEEEEEEEEEEEEEEEE');
+						transformControls.camera.visible = false
+
+						const onClick = (event, meshes, mouseType) => {
+							const mouse = new THREE.Vector2(5, 2);
+							mouse.x = (event.clientX / 1400) * 2 - 1;
+							mouse.y = -(event.clientY / 1400) * 2 + 1;
+							const raycaster = new THREE.Raycaster();
+							raycaster.setFromCamera(mouse, camera);
+							for (let i = 0; i < meshes.length; i++) {
+								const mesh = meshes[i];
+								const intersectsTop = raycaster.intersectObject(mesh.top);
+								const intersectsBottom = raycaster.intersectObject(mesh.bottom);
+								const intersectsLeft = raycaster.intersectObject(mesh.left);
+								const intersectsRight = raycaster.intersectObject(mesh.right);
+								if (intersectsTop.length > 0) {
+									orbitControls.enableRotate = false
+									if (mouseType == 'mousedown') {
+										mesh.dragTop = true
+									}
+								} else if (intersectsBottom.length > 0) {
+									orbitControls.enableRotate = false
+									if (mouseType == 'mousedown') {
+										mesh.dragBottom = true
+									}
+								} else if (intersectsLeft.length > 0) {
+									orbitControls.enableRotate = false
+									if (mouseType == 'mousedown') {
+										mesh.dragLeft = true
+									}
+								} else if (intersectsRight.length > 0) {
+									orbitControls.enableRotate = false
+									if (mouseType == 'mousedown') {
+										mesh.dragRight = true
+									}
+								}
+
+								if (mouseType == 'mousemove' && mesh.dragTop) {
+									if (mouseLeaveX > event.clientX) {
+										mesh.element.rotateZ(+0.01)
+									} else {
+										mesh.element.rotateZ(-0.01)
+									}
+								}
+
+								if (mouseType == 'mousemove' && mesh.dragBottom) {
+									if (mouseLeaveX > event.clientX) {
+										mesh.element.rotateZ(-0.01)
+									} else {
+										mesh.element.rotateZ(+0.01)
+									}
+								}
+
+
+								if (mouseType == 'mousemove' && mesh.dragLeft) {
+									if (mouseLeaveY > event.clientY) {
+										mesh.element.rotateY(-0.01)
+									} else {
+										mesh.element.rotateY(+0.01)
+									}
+								}
+
+
+								if (mouseType == 'mousemove' && mesh.dragRight) {
+									if (mouseLeaveY > event.clientY) {
+										mesh.element.rotateY(-0.01)
+									} else {
+										mesh.element.rotateY(+0.01)
+									}
+								}
+
+								if (mouseType == 'mouseup') {
+									mesh.dragTop = false
+									mesh.dragBottom = false
+									mesh.dragLeft = false
+									mesh.dragRight = false
+									orbitControls.enableRotate = true
+
+								}
+							}
+
+							mouseLeaveX = event.clientX
+							mouseLeaveY = event.clientY
+						}
 
 						const meshes = [];
-						const spriteMap = new THREE.TextureLoader().load('assets/point1.png');
-						const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap });
-						console.log(scene.children);
-						const len =  scene.children.length
-						for (let i = 1; i < scene.children.length - 1; i++) {
-							
-							const mesh = new THREE.Sprite(spriteMaterial);
-							mesh.scale.set(6, 2, 1);
+						const spritePoint = new THREE.TextureLoader().load('assets/point1.png');
+						const spriteMaterial = new THREE.SpriteMaterial({ map: spritePoint });
+						// const spriteShape = new THREE.TextureLoader().load('assets/rotate.png');
+						// const spriteMaterialShape = new THREE.SpriteMaterial({ map: spriteShape });
+						const textureLoader = new THREE.TextureLoader();
+						const texture = textureLoader.load('assets/112.png');
+						const material = new THREE.SpriteMaterial({ map: texture });
+						for (let i = 0; i < scene.children.length; i++) {
 							const element = scene.children[i];
+							if (element.type == "Group") {
+								let top = true;
+								let bottom = true;
+								let left = true;
+								let right = true;
+								for (let j = 0; j < element.children.length; j++) {
+									const child = element.children[j]
+									if (child.name == 'pointTop') {
+										top = false
+									}
+									if (child.name == 'pointBottom') {
+										bottom = false
+									}
+									if (child.name == 'pointLeft') {
+										left = false
+									}
+									if (child.name == 'pointRight') {
+										right = false
+									}
+								}
 
+								const meshTop = new THREE.Sprite(spriteMaterial);
+								meshTop.scale.set(6, 2, 1);
+								meshTop.name = 'pointTop'
+								meshTop.position.set(0, 8, 0);
 
-							mesh.position.set(element.position.x, element.position.y + 8, element.position.z - 2);
-							meshes.push(mesh)
+								const meshBottom = new THREE.Sprite(spriteMaterial);
+								meshBottom.scale.set(6, 2, 1);
+								meshBottom.position.set(0, -8, 0);
+								meshBottom.name = 'pointBottom'
+
+								const meshLeft = new THREE.Sprite(spriteMaterial);
+								meshLeft.scale.set(6, 2, 1);
+								meshLeft.position.set(-8, 0, 0);
+								meshLeft.name = 'pointLeft'
+
+								const meshRight = new THREE.Sprite(spriteMaterial);
+								meshRight.scale.set(6, 2, 1);
+								meshRight.position.set(8, 0, 0);
+								meshRight.name = 'pointRight'
+
+								meshes.push({
+									bottom: meshBottom,
+									top: meshTop,
+									left: meshLeft,
+									right: meshRight,
+									element,
+									dragTop: false,
+									dragBotom: false,
+									dragLeft: false,
+									dragRight: false,
+									click: false
+								})
+								if (top) {
+									element.add(meshTop)
+								}
+								if (bottom) {
+									element.add(meshBottom)
+								}
+								if (left) {
+									element.add(meshLeft)
+								}
+								if (right) {
+									element.add(meshRight)
+								}
+								// // const geometry = new THREE.PlaneGeometry(10, 10); // adjust the size as needed
+								// // const ccccc = new THREE.Mesh(geometry, material);
+								// element.add(material)
+							}
 						}
-						for (let i = 0; i < meshes.length; i++) {
-							const el = meshes[i];
-							scene.add(el);
-						}
-						renderer.domElement.addEventListener('click', (ev) => onClick(ev, meshes));
+						setMeshesData(meshes)
+						renderer.domElement.addEventListener('mousemove', (ev) => onClick(ev, meshes, 'mousemove'));
+						renderer.domElement.addEventListener('mousedown', (ev) => onClick(ev, meshes, 'mousedown'));
+						renderer.domElement.addEventListener('mouseup', (ev) => onClick(ev, meshes, 'mouseup'));
 						setTransformControls(transformControls);
 						break;
 					// case 82: // R
@@ -296,36 +448,37 @@ export default function StlViewer({
 			coreModelMesh.geometry.center();
 
 			group.attach(coreModelMesh);
-		});
-
-		loader.load(activeWing.path, (geometry) => {
-			const material = new THREE.MeshMatcapMaterial({
-				color: 0xabdbe3, // color for texture
-				matcap: textureLoader.load(whiteTexture)
-			});
-			wingModelMesh = new THREE.Mesh(geometry, material);
-			wingModelMesh.geometry.computeVertexNormals();
-			wingModelMesh.geometry.center();
-			wingModelMesh.position.copy(intersect.point);
-			// rotations
-			wingModelMesh.rotation.y = activeWing?.rotations.y;  // will add some rotation
-			wingModelMesh.rotation.x = activeWing?.rotations.x;   // rotate model of core element
-
-			//possitions
-			if (activeWing?.movedPos.x)
-				wingModelMesh.position.x += activeWing?.movedPos.x;
-			if (activeWing?.movedPos.y)
-				wingModelMesh.position.y += activeWing?.movedPos.y;
-			if (activeWing?.movedPos.z)
-				wingModelMesh.position.z += activeWing?.movedPos.z;
-
-			// scales
-			wingModelMesh.scale.x = activeWing?.scale || 0.7;
-			wingModelMesh.scale.y = activeWing?.scale || 0.7;
-			wingModelMesh.scale.z = activeWing?.scale || 0.7;
-			group.attach(wingModelMesh);
 			centerGroup(group);
 		});
+
+		// loader.load(activeWing.path, (geometry) => {
+		// 	const material = new THREE.MeshMatcapMaterial({
+		// 		color: 0xabdbe3, // color for texture
+		// 		matcap: textureLoader.load(whiteTexture)
+		// 	});
+		// 	wingModelMesh = new THREE.Mesh(geometry, material);
+		// 	wingModelMesh.geometry.computeVertexNormals();
+		// 	wingModelMesh.geometry.center();
+		// 	wingModelMesh.position.copy(intersect.point);
+		// 	// rotations
+		// 	wingModelMesh.rotation.y = activeWing?.rotations.y;  // will add some rotation
+		// 	wingModelMesh.rotation.x = activeWing?.rotations.x;   // rotate model of core element
+
+		// 	//possitions
+		// 	if (activeWing?.movedPos.x)
+		// 		wingModelMesh.position.x += activeWing?.movedPos.x;
+		// 	if (activeWing?.movedPos.y)
+		// 		wingModelMesh.position.y += activeWing?.movedPos.y;
+		// 	if (activeWing?.movedPos.z)
+		// 		wingModelMesh.position.z += activeWing?.movedPos.z;
+
+		// 	// scales
+		// 	wingModelMesh.scale.x = activeWing?.scale || 0.7;
+		// 	wingModelMesh.scale.y = activeWing?.scale || 0.7;
+		// 	wingModelMesh.scale.z = activeWing?.scale || 0.7;
+		// 	group.attach(wingModelMesh);
+		// 	centerGroup(group);
+		// });
 
 		setPieces((prevPieces) => {
 			let pieces = Object.assign({}, prevPieces);
