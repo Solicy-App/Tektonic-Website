@@ -6,12 +6,12 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 import { createAnimate } from './stlHelpers/animate';
 import { centerGroup } from './stlHelpers/centerGroup';
 import { getIntersectObjectsOfClick } from './stlHelpers/getIntersectObjectsOfClick';
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 
 const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
 let mouseLeaveX
 let mouseLeaveY
+let leavTime = false
 export default function StlViewer({
 	sizeX = 1400,
 	sizeY = 1400,
@@ -191,7 +191,6 @@ export default function StlViewer({
 						transformControls.showY = true
 						transformControls.showZ = true
 						transformControls.setMode('translate');
-						console.log(transformControls, 'WWWWWWWWWWWWWWWWWWWWWWWWWWWW');
 
 						for (let i = 0; i < scene.children.length; i++) {
 							const element = scene.children[i];
@@ -200,7 +199,6 @@ export default function StlViewer({
 									const mesh = element.children[j]
 
 									if (mesh.name == 'pointTop' || mesh.name == 'pointBottom') {
-										console.log(mesh, '>>>>>>>>>>>>>>>>>>>>>>>>>s');
 										scene.remove(mesh)
 									}
 								}
@@ -213,7 +211,6 @@ export default function StlViewer({
 						transformControls.showX = false
 						transformControls.showY = false
 						transformControls.showZ = false
-						console.log(scene, 'EEEEEEEEEEEEEEEEEEEEEEEEEEE');
 						transformControls.camera.visible = false
 
 						const onClick = (event, meshes, mouseType) => {
@@ -222,31 +219,114 @@ export default function StlViewer({
 							mouse.y = -(event.clientY / 1400) * 2 + 1;
 							const raycaster = new THREE.Raycaster();
 							raycaster.setFromCamera(mouse, camera);
+
+							const material = new THREE.MeshBasicMaterial({
+								map: texture,
+								transparent: true
+							});
+
+							const geometry = new THREE.PlaneGeometry(16.5, 16.5);
+							const meshZ = new THREE.Mesh(geometry, material);
+							meshZ.name = 'meshZ'
+							const meshZR = new THREE.Mesh(geometry, material);
+							meshZR.name = 'meshZR'
+							meshZR.rotation.set(0, Math.PI, 0);
+							const meshY = new THREE.Mesh(geometry, material);
+							meshY.name = 'meshY'
+							meshY.rotation.set(Math.PI / 2, 0, 0);
+							const meshYR = new THREE.Mesh(geometry, material);
+							meshYR.name = 'meshYR'
+							meshYR.rotation.set(Math.PI / 2, Math.PI, 0);
+							const meshX = new THREE.Mesh(geometry, material);
+							meshX.name = 'meshX'
+							meshX.rotation.set(0, Math.PI / 2, 0);
+							const meshXR = new THREE.Mesh(geometry, material);
+							meshXR.name = 'meshXR'
+							meshXR.rotation.set(0, -Math.PI / 2, 0);
+
 							for (let i = 0; i < meshes.length; i++) {
 								const mesh = meshes[i];
 								const intersectsTop = raycaster.intersectObject(mesh.top);
-								const intersectsBottom = raycaster.intersectObject(mesh.bottom);
-								const intersectsLeft = raycaster.intersectObject(mesh.left);
+								// const intersectsBottom = raycaster.intersectObject(mesh.bottom);
+								// const intersectsLeft = raycaster.intersectObject(mesh.left);
 								const intersectsRight = raycaster.intersectObject(mesh.right);
+								// const intersectsLeftX = raycaster.intersectObject(mesh.leftX);
+								const intersectsRightX = raycaster.intersectObject(mesh.rightX);
+								if (mouseType == 'mousedown') {
+									leavTime = true
+									setTimeout(() => {
+										leavTime = false
+									}, 200)
+								}
+								if (mouseType == 'mouseup' && leavTime) {
+									const aaaa = []
+									for (let j = 0; j < mesh.top.parent.children.length; j++) {
+										const element = mesh.top.parent.children[j];
+
+										if (!(element.name == 'meshZ' || element.name == 'meshZR' || element.name == 'meshY' || element.name == 'meshYR' || element.name == 'meshX' || element.name == 'meshXR')) {
+											aaaa.push(element)
+										}
+									}
+									mesh.top.parent.children = aaaa
+								}
 								if (intersectsTop.length > 0) {
 									orbitControls.enableRotate = false
 									if (mouseType == 'mousedown') {
 										mesh.dragTop = true
 									}
-								} else if (intersectsBottom.length > 0) {
-									orbitControls.enableRotate = false
-									if (mouseType == 'mousedown') {
-										mesh.dragBottom = true
+									if (mouseType == 'mouseup') {
+										mesh.top.parent.add(meshZ)
+										mesh.top.parent.add(meshZR)
 									}
-								} else if (intersectsLeft.length > 0) {
-									orbitControls.enableRotate = false
-									if (mouseType == 'mousedown') {
-										mesh.dragLeft = true
-									}
-								} else if (intersectsRight.length > 0) {
+								} 
+								// else if (intersectsBottom.length > 0) {
+								// 	orbitControls.enableRotate = false
+								// 	if (mouseType == 'mousedown') {
+								// 		mesh.dragBottom = true
+								// 	}
+								// 	if (mouseType == 'mouseup') {
+								// 		mesh.bottom.parent.add(meshZ)
+								// 		mesh.bottom.parent.add(meshZR)
+								// 	}
+								// } 
+								// else if (intersectsLeft.length > 0) {
+								// 	orbitControls.enableRotate = false
+								// 	if (mouseType == 'mousedown') {
+								// 		mesh.dragLeft = true
+								// 	}
+								// 	if (mouseType == 'mouseup') {
+								// 		mesh.left.parent.add(meshY)
+								// 		mesh.left.parent.add(meshYR)
+								// 	}
+								// } 
+								else if (intersectsRight.length > 0) {
 									orbitControls.enableRotate = false
 									if (mouseType == 'mousedown') {
 										mesh.dragRight = true
+									}
+									if (mouseType == 'mouseup') {
+										mesh.right.parent.add(meshY)
+										mesh.right.parent.add(meshYR)
+									}
+								}
+								// else if (intersectsLeftX.length > 0) {
+								// 	orbitControls.enableRotate = false
+								// 	if (mouseType == 'mousedown') {
+								// 		mesh.dragLeftX = true
+								// 	}
+								// 	if (mouseType == 'mouseup') {
+								// 		mesh.leftX.parent.add(meshX)
+								// 		mesh.leftX.parent.add(meshXR)
+								// 	}
+								// } 
+								else if (intersectsRightX.length > 0) {
+									orbitControls.enableRotate = false
+									if (mouseType == 'mousedown') {
+										mesh.dragRightX = true
+									}
+									if (mouseType == 'mouseup') {
+										mesh.rightX.parent.add(meshX)
+										mesh.rightX.parent.add(meshXR)
 									}
 								}
 
@@ -258,22 +338,22 @@ export default function StlViewer({
 									}
 								}
 
-								if (mouseType == 'mousemove' && mesh.dragBottom) {
-									if (mouseLeaveX > event.clientX) {
-										mesh.element.rotateZ(-0.01)
-									} else {
-										mesh.element.rotateZ(+0.01)
-									}
-								}
+								// if (mouseType == 'mousemove' && mesh.dragBottom) {
+								// 	if (mouseLeaveX > event.clientX) {
+								// 		mesh.element.rotateZ(-0.01)
+								// 	} else {
+								// 		mesh.element.rotateZ(+0.01)
+								// 	}
+								// }
 
 
-								if (mouseType == 'mousemove' && mesh.dragLeft) {
-									if (mouseLeaveY > event.clientY) {
-										mesh.element.rotateY(-0.01)
-									} else {
-										mesh.element.rotateY(+0.01)
-									}
-								}
+								// if (mouseType == 'mousemove' && mesh.dragLeft) {
+								// 	if (mouseLeaveY > event.clientY) {
+								// 		mesh.element.rotateY(-0.01)
+								// 	} else {
+								// 		mesh.element.rotateY(+0.01)
+								// 	}
+								// }
 
 
 								if (mouseType == 'mousemove' && mesh.dragRight) {
@@ -284,11 +364,30 @@ export default function StlViewer({
 									}
 								}
 
+
+								// if (mouseType == 'mousemove' && mesh.dragLeftX) {
+								// 	if (mouseLeaveY > event.clientY) {
+								// 		mesh.element.rotateX(-0.01)
+								// 	} else {
+								// 		mesh.element.rotateX(+0.01)
+								// 	}
+								// }
+
+								if (mouseType == 'mousemove' && mesh.dragRightX) {
+									if (mouseLeaveY > event.clientY) {
+										mesh.element.rotateX(-0.01)
+									} else {
+										mesh.element.rotateX(+0.01)
+									}
+								}
+
 								if (mouseType == 'mouseup') {
 									mesh.dragTop = false
-									mesh.dragBottom = false
-									mesh.dragLeft = false
+									// mesh.dragBottom = false
+									// mesh.dragLeft = false
 									mesh.dragRight = false
+									// mesh.dragLeftX = false
+									mesh.dragRightX = false
 									orbitControls.enableRotate = true
 
 								}
@@ -301,31 +400,37 @@ export default function StlViewer({
 						const meshes = [];
 						const spritePoint = new THREE.TextureLoader().load('assets/point1.png');
 						const spriteMaterial = new THREE.SpriteMaterial({ map: spritePoint });
-						// const spriteShape = new THREE.TextureLoader().load('assets/rotate.png');
-						// const spriteMaterialShape = new THREE.SpriteMaterial({ map: spriteShape });
 						const textureLoader = new THREE.TextureLoader();
 						const texture = textureLoader.load('assets/112.png');
-						const material = new THREE.SpriteMaterial({ map: texture });
+
 						for (let i = 0; i < scene.children.length; i++) {
 							const element = scene.children[i];
 							if (element.type == "Group") {
 								let top = true;
-								let bottom = true;
-								let left = true;
+								// let bottom = true;
+								// let left = true;
 								let right = true;
+								// let leftX = true;
+								let rightX = true;
 								for (let j = 0; j < element.children.length; j++) {
 									const child = element.children[j]
 									if (child.name == 'pointTop') {
 										top = false
 									}
-									if (child.name == 'pointBottom') {
-										bottom = false
-									}
-									if (child.name == 'pointLeft') {
-										left = false
-									}
+									// if (child.name == 'pointBottom') {
+									// 	bottom = false
+									// }
+									// if (child.name == 'pointLeft') {
+									// 	left = false
+									// }
 									if (child.name == 'pointRight') {
 										right = false
+									}
+									// if (child.name == 'pointLeftX') {
+									// 	leftX = false
+									// }
+									if (child.name == 'pointRightX') {
+										rightX = false
 									}
 								}
 
@@ -334,54 +439,72 @@ export default function StlViewer({
 								meshTop.name = 'pointTop'
 								meshTop.position.set(0, 8, 0);
 
-								const meshBottom = new THREE.Sprite(spriteMaterial);
-								meshBottom.scale.set(6, 2, 1);
-								meshBottom.position.set(0, -8, 0);
-								meshBottom.name = 'pointBottom'
+								// const meshBottom = new THREE.Sprite(spriteMaterial);
+								// meshBottom.scale.set(6, 2, 1);
+								// meshBottom.position.set(0, -8, 0);
+								// meshBottom.name = 'pointBottom'
 
-								const meshLeft = new THREE.Sprite(spriteMaterial);
-								meshLeft.scale.set(6, 2, 1);
-								meshLeft.position.set(-8, 0, 0);
-								meshLeft.name = 'pointLeft'
+								// const meshLeft = new THREE.Sprite(spriteMaterial);
+								// meshLeft.scale.set(6, 2, 1);
+								// meshLeft.position.set(-8, 0, 0);
+								// meshLeft.name = 'pointLeft'
 
 								const meshRight = new THREE.Sprite(spriteMaterial);
 								meshRight.scale.set(6, 2, 1);
 								meshRight.position.set(8, 0, 0);
 								meshRight.name = 'pointRight'
 
+								// const meshLeftX = new THREE.Sprite(spriteMaterial);
+								// meshLeftX.scale.set(6, 2, 1);
+								// meshLeftX.position.set(0, 0, -8);
+								// meshLeftX.name = 'pointLeftX'
+
+								const meshRightX = new THREE.Sprite(spriteMaterial);
+								meshRightX.scale.set(6, 2, 1);
+								meshRightX.position.set(0, 0, 8);
+								meshRightX.name = 'pointRightX'
+
 								meshes.push({
-									bottom: meshBottom,
+									// bottom: meshBottom,
 									top: meshTop,
-									left: meshLeft,
+									// left: meshLeft,
 									right: meshRight,
+									// leftX: meshLeftX,
+									rightX: meshRightX,
 									element,
 									dragTop: false,
-									dragBotom: false,
-									dragLeft: false,
+									// dragBotom: false,
+									// dragLeft: false,
 									dragRight: false,
+									// dragLeftX: false,
+									dragRightX: false,
 									click: false
 								})
 								if (top) {
 									element.add(meshTop)
 								}
-								if (bottom) {
-									element.add(meshBottom)
-								}
-								if (left) {
-									element.add(meshLeft)
-								}
+								// if (bottom) {
+								// 	element.add(meshBottom)
+								// }
+								// if (left) {
+								// 	element.add(meshLeft)
+								// }
 								if (right) {
 									element.add(meshRight)
 								}
-								// // const geometry = new THREE.PlaneGeometry(10, 10); // adjust the size as needed
-								// // const ccccc = new THREE.Mesh(geometry, material);
-								// element.add(material)
+								// if (leftX) {
+								// 	element.add(meshLeftX)
+								// }
+								if (rightX) {
+									element.add(meshRightX)
+								}
 							}
 						}
 						setMeshesData(meshes)
 						renderer.domElement.addEventListener('mousemove', (ev) => onClick(ev, meshes, 'mousemove'));
 						renderer.domElement.addEventListener('mousedown', (ev) => onClick(ev, meshes, 'mousedown'));
 						renderer.domElement.addEventListener('mouseup', (ev) => onClick(ev, meshes, 'mouseup'));
+						renderer.domElement.addEventListener('click', (ev) => onClick(ev, meshes, 'click'));
 						setTransformControls(transformControls);
 						break;
 					// case 82: // R
