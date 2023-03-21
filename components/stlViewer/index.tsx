@@ -44,20 +44,8 @@ export default function StlViewer({
 		setRenderer(new THREE.WebGLRenderer());
 	}, []);
 
-	const changeCameraPosition = () => {
-		for (let i = 0; i < scene.children.length; i++) {
-			const core = scene.children[i];
-
-			if (core.type == 'Group') {
-				// core.lookAt(camera.position)
-				// console.log(core);
-			}
-		}
-	}
-
 	useEffect(() => {
 		const handleClick = (event) => {
-			changeCameraPosition()
 			if (!draggingControl) {
 				const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, Object.values(pieces));
 				const scrollRotate = (e) => {
@@ -342,11 +330,11 @@ export default function StlViewer({
 									if (child.name == 'pointTop') {
 										top = false
 									}
-									
+
 									if (child.name == 'pointRight') {
 										right = false
 									}
-									
+
 									if (child.name == 'pointRightX') {
 										rightX = false
 									}
@@ -384,7 +372,7 @@ export default function StlViewer({
 								if (right) {
 									element.add(meshRight)
 								}
-								
+
 								if (rightX) {
 									element.add(meshRightX)
 								}
