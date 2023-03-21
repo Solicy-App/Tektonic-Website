@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { STLLoader as Loader } from 'three/examples/jsm/loaders/STLLoader';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -11,8 +11,6 @@ const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
 let mouseLeaveX
 let mouseLeaveY
-let mouseLeaveX1111
-let mouseLeaveY1111
 let leavTime = false
 export default function StlViewer({
 	sizeX = 1400,
@@ -30,7 +28,6 @@ export default function StlViewer({
 	const [coreModelMesh, setCoreModelMesh] = useState(null);
 	const [pieces, setPieces] = useState({});
 	const [draggingControl, setDraggingControl] = useState(false);
-	const [meshesData, setMeshesData] = useState([]);
 
 	let scrollRotateEvent;
 
@@ -169,11 +166,6 @@ export default function StlViewer({
 
 	useEffect(() => {
 		if (transformControls) {
-			// const myCustomGizmo = new THREE.Object3D();
-			// // add your custom Gizmo objects to myCustomGizmo here
-
-			// const myCustomGizmoHelper = new THREE.GizmoHelper(myCustomGizmo);
-			// transformControls.gizmo = myCustomGizmoHelper;
 			transformControls.space = 'local';
 			transformControls.addEventListener('change', () => {
 				renderer.render(scene, camera);
@@ -258,15 +250,15 @@ export default function StlViewer({
 									}, 200)
 								}
 								if (mouseType == 'mouseup' && leavTime) {
-									const aaaa = []
+									const childElements = []
 									for (let j = 0; j < mesh.top.parent.children.length; j++) {
 										const element = mesh.top.parent.children[j];
 
 										if (!(element.name == 'meshZ' || element.name == 'meshZR' || element.name == 'meshY' || element.name == 'meshYR' || element.name == 'meshX' || element.name == 'meshXR')) {
-											aaaa.push(element)
+											childElements.push(element)
 										}
 									}
-									mesh.top.parent.children = aaaa
+									mesh.top.parent.children = childElements
 								}
 								if (intersectsTop.length > 0) {
 									orbitControls.enableRotate = false
@@ -343,28 +335,18 @@ export default function StlViewer({
 							const element = scene.children[i];
 							if (element.type == "Group") {
 								let top = true;
-								// let bottom = true;
-								// let left = true;
 								let right = true;
-								// let leftX = true;
 								let rightX = true;
 								for (let j = 0; j < element.children.length; j++) {
 									const child = element.children[j]
 									if (child.name == 'pointTop') {
 										top = false
 									}
-									// if (child.name == 'pointBottom') {
-									// 	bottom = false
-									// }
-									// if (child.name == 'pointLeft') {
-									// 	left = false
-									// }
+									
 									if (child.name == 'pointRight') {
 										right = false
 									}
-									// if (child.name == 'pointLeftX') {
-									// 	leftX = false
-									// }
+									
 									if (child.name == 'pointRightX') {
 										rightX = false
 									}
@@ -375,25 +357,10 @@ export default function StlViewer({
 								meshTop.name = 'pointTop'
 								meshTop.position.set(0, 8, 0);
 
-								// const meshBottom = new THREE.Sprite(spriteMaterial);
-								// meshBottom.scale.set(6, 2, 1);
-								// meshBottom.position.set(0, -8, 0);
-								// meshBottom.name = 'pointBottom'
-
-								// const meshLeft = new THREE.Sprite(spriteMaterial);
-								// meshLeft.scale.set(6, 2, 1);
-								// meshLeft.position.set(-8, 0, 0);
-								// meshLeft.name = 'pointLeft'
-
 								const meshRight = new THREE.Sprite(spriteMaterial);
 								meshRight.scale.set(6, 2, 1);
 								meshRight.position.set(8, 0, 0);
 								meshRight.name = 'pointRight'
-
-								// const meshLeftX = new THREE.Sprite(spriteMaterial);
-								// meshLeftX.scale.set(6, 2, 1);
-								// meshLeftX.position.set(0, 0, -8);
-								// meshLeftX.name = 'pointLeftX'
 
 								const meshRightX = new THREE.Sprite(spriteMaterial);
 								meshRightX.scale.set(6, 2, 1);
@@ -401,42 +368,28 @@ export default function StlViewer({
 								meshRightX.name = 'pointRightX'
 
 								meshes.push({
-									// bottom: meshBottom,
 									top: meshTop,
-									// left: meshLeft,
 									right: meshRight,
-									// leftX: meshLeftX,
 									rightX: meshRightX,
 									element,
 									dragTop: false,
-									// dragBotom: false,
-									// dragLeft: false,
 									dragRight: false,
-									// dragLeftX: false,
 									dragRightX: false,
 									click: false
 								})
 								if (top) {
 									element.add(meshTop)
 								}
-								// if (bottom) {
-								// 	element.add(meshBottom)
-								// }
-								// if (left) {
-								// 	element.add(meshLeft)
-								// }
+
 								if (right) {
 									element.add(meshRight)
 								}
-								// if (leftX) {
-								// 	element.add(meshLeftX)
-								// }
+								
 								if (rightX) {
 									element.add(meshRightX)
 								}
 							}
 						}
-						setMeshesData(meshes)
 						renderer.domElement.addEventListener('mousemove', (ev) => onClick(ev, meshes, 'mousemove'));
 						renderer.domElement.addEventListener('mousedown', (ev) => onClick(ev, meshes, 'mousedown'));
 						renderer.domElement.addEventListener('mouseup', (ev) => onClick(ev, meshes, 'mouseup'));
