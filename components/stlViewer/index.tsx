@@ -11,6 +11,8 @@ const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
 let mouseLeaveX
 let mouseLeaveY
+let mouseLeaveX1111
+let mouseLeaveY1111
 let leavTime = false
 export default function StlViewer({
 	sizeX = 1400,
@@ -247,10 +249,7 @@ export default function StlViewer({
 							for (let i = 0; i < meshes.length; i++) {
 								const mesh = meshes[i];
 								const intersectsTop = raycaster.intersectObject(mesh.top);
-								// const intersectsBottom = raycaster.intersectObject(mesh.bottom);
-								// const intersectsLeft = raycaster.intersectObject(mesh.left);
 								const intersectsRight = raycaster.intersectObject(mesh.right);
-								// const intersectsLeftX = raycaster.intersectObject(mesh.leftX);
 								const intersectsRightX = raycaster.intersectObject(mesh.rightX);
 								if (mouseType == 'mousedown') {
 									leavTime = true
@@ -278,27 +277,7 @@ export default function StlViewer({
 										mesh.top.parent.add(meshZ)
 										mesh.top.parent.add(meshZR)
 									}
-								} 
-								// else if (intersectsBottom.length > 0) {
-								// 	orbitControls.enableRotate = false
-								// 	if (mouseType == 'mousedown') {
-								// 		mesh.dragBottom = true
-								// 	}
-								// 	if (mouseType == 'mouseup') {
-								// 		mesh.bottom.parent.add(meshZ)
-								// 		mesh.bottom.parent.add(meshZR)
-								// 	}
-								// } 
-								// else if (intersectsLeft.length > 0) {
-								// 	orbitControls.enableRotate = false
-								// 	if (mouseType == 'mousedown') {
-								// 		mesh.dragLeft = true
-								// 	}
-								// 	if (mouseType == 'mouseup') {
-								// 		mesh.left.parent.add(meshY)
-								// 		mesh.left.parent.add(meshYR)
-								// 	}
-								// } 
+								}
 								else if (intersectsRight.length > 0) {
 									orbitControls.enableRotate = false
 									if (mouseType == 'mousedown') {
@@ -309,16 +288,6 @@ export default function StlViewer({
 										mesh.right.parent.add(meshYR)
 									}
 								}
-								// else if (intersectsLeftX.length > 0) {
-								// 	orbitControls.enableRotate = false
-								// 	if (mouseType == 'mousedown') {
-								// 		mesh.dragLeftX = true
-								// 	}
-								// 	if (mouseType == 'mouseup') {
-								// 		mesh.leftX.parent.add(meshX)
-								// 		mesh.leftX.parent.add(meshXR)
-								// 	}
-								// } 
 								else if (intersectsRightX.length > 0) {
 									orbitControls.enableRotate = false
 									if (mouseType == 'mousedown') {
@@ -329,7 +298,6 @@ export default function StlViewer({
 										mesh.rightX.parent.add(meshXR)
 									}
 								}
-
 								if (mouseType == 'mousemove' && mesh.dragTop) {
 									if (mouseLeaveX > event.clientX) {
 										mesh.element.rotateZ(+0.01)
@@ -337,25 +305,6 @@ export default function StlViewer({
 										mesh.element.rotateZ(-0.01)
 									}
 								}
-
-								// if (mouseType == 'mousemove' && mesh.dragBottom) {
-								// 	if (mouseLeaveX > event.clientX) {
-								// 		mesh.element.rotateZ(-0.01)
-								// 	} else {
-								// 		mesh.element.rotateZ(+0.01)
-								// 	}
-								// }
-
-
-								// if (mouseType == 'mousemove' && mesh.dragLeft) {
-								// 	if (mouseLeaveY > event.clientY) {
-								// 		mesh.element.rotateY(-0.01)
-								// 	} else {
-								// 		mesh.element.rotateY(+0.01)
-								// 	}
-								// }
-
-
 								if (mouseType == 'mousemove' && mesh.dragRight) {
 									if (mouseLeaveY > event.clientY) {
 										mesh.element.rotateY(-0.01)
@@ -363,16 +312,6 @@ export default function StlViewer({
 										mesh.element.rotateY(+0.01)
 									}
 								}
-
-
-								// if (mouseType == 'mousemove' && mesh.dragLeftX) {
-								// 	if (mouseLeaveY > event.clientY) {
-								// 		mesh.element.rotateX(-0.01)
-								// 	} else {
-								// 		mesh.element.rotateX(+0.01)
-								// 	}
-								// }
-
 								if (mouseType == 'mousemove' && mesh.dragRightX) {
 									if (mouseLeaveY > event.clientY) {
 										mesh.element.rotateX(-0.01)
@@ -383,10 +322,7 @@ export default function StlViewer({
 
 								if (mouseType == 'mouseup') {
 									mesh.dragTop = false
-									// mesh.dragBottom = false
-									// mesh.dragLeft = false
 									mesh.dragRight = false
-									// mesh.dragLeftX = false
 									mesh.dragRightX = false
 									orbitControls.enableRotate = true
 
