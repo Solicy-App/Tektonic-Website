@@ -11,7 +11,7 @@ const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
 let mouseLeaveX
 let mouseLeaveY
-let leavTime = false
+
 export default function StlViewer({
 	sizeX = 1400,
 	sizeY = 1400,
@@ -22,6 +22,11 @@ export default function StlViewer({
 	const containerRef = useRef();
 	const [transformControls, setTransformControls] = useState<TransformControls>(undefined);
 	const [orbitControls, setOrbitControls] = useState(undefined);
+	const [orbitControlsValues, setOrbitControlsValues] = useState<any>({
+		LEFT: THREE.MOUSE.ROTATE,
+		MIDDLE: THREE.MOUSE.PAN,
+		RIGHT: THREE.MOUSE.PAN,  // for now it's as the same like the middle button
+	});
 	const [renderer, setRenderer] = useState(undefined);
 	const [camera, setCamera] = useState(undefined);
 	const [scene, setScene] = useState(undefined);
@@ -125,13 +130,246 @@ export default function StlViewer({
 			// zoom parameters how much can zoom
 			orbitControls.maxDistance = 450;
 			orbitControls.minDistance = 125;
-			orbitControls.mouseButtons = {
-				LEFT: THREE.MOUSE.ROTATE,
-				MIDDLE: THREE.MOUSE.PAN,
-				RIGHT: THREE.MOUSE.PAN,  // for now it's as the same like the middle button
-			};
+			orbitControls.mouseButtons = orbitControlsValues;
 		}
 	}, [orbitControls]);
+
+	const clickEKey = () => {
+
+		transformControls.dragging = false
+		transformControls.enabled = false
+		transformControls.showX = false
+		transformControls.showY = false
+		transformControls.showZ = false
+		const onClick = (event, meshes, mouseType) => {
+			const cameraRotationMatrix = new THREE.Matrix4();
+			cameraRotationMatrix.extractRotation(camera.matrixWorld);
+			const positions = camera.position;
+			const mouse = new THREE.Vector3(5, 2);
+			mouse.x = (event.clientX / 1400) * 2 - 1;
+			mouse.y = -(event.clientY / 1400) * 2 + 1;
+			const raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(mouse, camera);
+
+			for (let index = 0; index < scene.children.length; index++) {
+				const element = scene.children[index];
+				if (element.type == 'Group') {
+
+					const intersectsGroup = raycaster.intersectObject(element.children[0]);
+					if (mouseType == "mousedown" && intersectsGroup.length > 0) {
+						element['mousedown'] = true
+						orbitControls.enablePan = false;
+						orbitControls.enableRotate = false;
+					}
+					if (mouseType == "mousemove" && element['mousedown']) {
+						mouse.x = (event.clientX / 1400) * 2 - 1;
+						mouse.y = -(event.clientY / 1400) * 2 + 1;
+						// element.position.x = mouse.x * 85;
+						// element.position.y = mouse.y * 85;
+						const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0); // plane parallel to screen
+						const raycaster = new THREE.Raycaster();
+						raycaster.setFromCamera(mouse, camera);
+						const intersection = new THREE.Vector3();
+						intersection.x = element.position.x
+						intersection.y = element.position.y
+						intersection.z = element.position.z
+						raycaster.ray.intersectPlane(plane, intersection);
+						const mouseWorldPos = intersection;
+						console.log( mouseWorldPos.z);
+						element.position.x = mouseWorldPos.x;
+						element.position.y = mouseWorldPos.y;
+						element.position.z = mouseWorldPos.z ? mouseWorldPos.z : element.position.z;
+						
+						setTransformControls(transformControls);
+					}
+				}
+
+			}
+
+
+			for (let index = 0; index < scene.children.length; index++) {
+				const element = scene.children[index];
+				if (element.type == 'Group') {
+					if (mouseType == "mouseup") {
+						element['mousedown'] = false
+						orbitControls.enablePan = true;
+						orbitControls.enableRotate = true;
+						setTransformControls(transformControls);
+					}
+				}
+
+			}
+
+
+			for (let i = 0; i < meshes.length; i++) {
+				const mesh = meshes[i];
+				const intersectsTop = raycaster.intersectObject(mesh.top);
+				const intersectsBottom = raycaster.intersectObject(mesh.bottom);
+				const intersectsRight = raycaster.intersectObject(mesh.right);
+				const intersectsLeft = raycaster.intersectObject(mesh.left);
+
+
+				if (intersectsBottom.length > 0) {
+					orbitControls.enableRotate = false
+					if (mouseType == 'mousedown') {
+						mesh.dragBottom = true
+					}
+				}
+				else if (intersectsTop.length > 0) {
+					orbitControls.enableRotate = false
+					if (mouseType == 'mousedown') {
+						mesh.dragTop = true
+					}
+				}
+				else if (intersectsRight.length > 0) {
+					orbitControls.enableRotate = false
+					if (mouseType == 'mousedown') {
+						mesh.dragRight = true
+					}
+				} else if (intersectsLeft.length > 0) {
+					orbitControls.enableRotate = false
+					if (mouseType == 'mousedown') {
+						mesh.dragLeft = true
+					}
+				}
+
+				if (mouseType == 'mousemove' && mesh.dragTop) {
+					if (mouseLeaveX > event.clientX) {
+						mesh.element.rotateX(positions.x / 35000)
+						mesh.element.rotateZ(positions.z / 35000)
+					} else {
+						mesh.element.rotateX(-1 * positions.x / 35000)
+						mesh.element.rotateZ(-1 * positions.z / 35000)
+					}
+				}
+
+				if (mouseType == 'mousemove' && mesh.dragBottom) {
+					if (mouseLeaveX > event.clientX) {
+						mesh.element.rotateX(-1 * positions.x / 35000)
+						mesh.element.rotateZ(-1 * positions.z / 35000)
+					} else {
+						mesh.element.rotateZ(positions.z / 35000)
+						mesh.element.rotateX(positions.x / 35000)
+					}
+				}
+
+				if (mouseType == 'mousemove' && mesh.dragLeft) {
+					if (mouseLeaveY > event.clientY) {
+						mesh.element.rotateY(-0.01)
+					} else {
+						mesh.element.rotateY(+0.01)
+					}
+				}
+
+
+				if (mouseType == 'mousemove' && mesh.dragRight) {
+					if (mouseLeaveY > event.clientY) {
+						mesh.element.rotateY(-0.01)
+					} else {
+						mesh.element.rotateY(+0.01)
+					}
+				}
+
+				if (mouseType == 'mouseup') {
+					mesh.dragTop = false
+					mesh.dragBottom = false
+					mesh.dragRight = false
+					mesh.dragLeft = false
+					orbitControls.enableRotate = true
+
+				}
+
+			}
+
+			mouseLeaveX = event.clientX
+			mouseLeaveY = event.clientY
+		}
+
+		const meshes = [];
+		const spritePoint = new THREE.TextureLoader().load('assets/point1.svg');
+		const spriteMaterial = new THREE.SpriteMaterial({ map: spritePoint });
+
+		for (let i = 0; i < scene.children.length; i++) {
+			const element = scene.children[i];
+			if (element.type == "Group") {
+				let top = true;
+				let bottom = true;
+				let right = true;
+				let left = true;
+				for (let j = 0; j < element.children.length; j++) {
+					const child = element.children[j]
+					if (child.name == 'pointTop') {
+						top = false
+					}
+					if (child.name == 'pointBottom') {
+						bottom = false
+					}
+
+					if (child.name == 'pointRight') {
+						right = false
+					}
+
+					if (child.name == 'pointLeft') {
+						left = false
+					}
+				}
+
+				const meshTop = new THREE.Sprite(spriteMaterial);
+				meshTop.scale.set(3, 1.4, 1);
+				meshTop.name = 'pointTop'
+				meshTop.position.set(0.9, 8, -0.8);
+
+				const meshBottom = new THREE.Sprite(spriteMaterial);
+				meshBottom.scale.set(3, 1.4, 1);
+				meshBottom.position.set(-0.2, -8, 1);
+				meshBottom.name = 'pointBottom'
+
+				const meshRight = new THREE.Sprite(spriteMaterial);
+				meshRight.scale.set(3, 1.4, 1);
+				meshRight.position.set(8, -0.5, 0);
+				meshRight.name = 'pointRight'
+				meshRight.rotateX(Math.PI / 4);
+
+				const meshLeft = new THREE.Sprite(spriteMaterial);
+				meshLeft.scale.set(3, 1.4, 1);
+				meshLeft.position.set(-8, 0.5, 0);
+				meshLeft.name = 'pointLeft'
+
+				meshes.push({
+					top: meshTop,
+					bottom: meshBottom,
+					right: meshRight,
+					left: meshLeft,
+					element,
+					dragTop: false,
+					dragBotom: false,
+					dragRight: false,
+					click: false
+				})
+
+				if (top) {
+					element.add(meshTop)
+				}
+
+				if (bottom) {
+					element.add(meshBottom)
+				}
+
+				if (right) {
+					element.add(meshRight)
+				}
+
+				if (left) {
+					element.add(meshLeft)
+				}
+			}
+		}
+		renderer.domElement.addEventListener('mousemove', (ev) => onClick(ev, meshes, 'mousemove'));
+		renderer.domElement.addEventListener('mousedown', (ev) => onClick(ev, meshes, 'mousedown'));
+		renderer.domElement.addEventListener('mouseup', (ev) => onClick(ev, meshes, 'mouseup'));
+		renderer.domElement.addEventListener('click', (ev) => onClick(ev, meshes, 'click'));
+		setTransformControls(transformControls);
+	}
 
 	useEffect(() => {
 		const handleDblClick = (event) => {
@@ -141,6 +379,7 @@ export default function StlViewer({
 				//show core screw/(implant) pices
 				const core = addCorePieces(intersect, scene, loader);
 				setScene(core)
+
 			}
 		};
 
@@ -166,227 +405,6 @@ export default function StlViewer({
 
 			window.addEventListener('keydown', event => {
 				switch (event.keyCode) {
-					case 87: // W
-						transformControls.dragging = true
-						transformControls.enabled = true
-						transformControls.showX = true
-						transformControls.showY = true
-						transformControls.showZ = true
-						transformControls.setMode('translate');
-
-						for (let i = 0; i < scene.children.length; i++) {
-							const element = scene.children[i];
-							if (element.type == "Group") {
-								for (let j = 0; j < element.children.length; j++) {
-									const mesh = element.children[j]
-
-									if (mesh.name == 'pointTop' || mesh.name == 'pointBottom') {
-										scene.remove(mesh)
-									}
-								}
-							}
-						}
-						break;
-					case 69: // E
-						transformControls.setMode('translate');
-						transformControls.dragging = false
-						transformControls.showX = false
-						transformControls.showY = false
-						transformControls.showZ = false
-						transformControls.camera.visible = false
-
-						const onClick = (event, meshes, mouseType) => {
-							const mouse = new THREE.Vector2(5, 2);
-							mouse.x = (event.clientX / 1400) * 2 - 1;
-							mouse.y = -(event.clientY / 1400) * 2 + 1;
-							const raycaster = new THREE.Raycaster();
-							raycaster.setFromCamera(mouse, camera);
-
-							const material = new THREE.MeshBasicMaterial({
-								map: texture,
-								transparent: true
-							});
-
-							const geometry = new THREE.PlaneGeometry(16.5, 16.5);
-							const meshZ = new THREE.Mesh(geometry, material);
-							meshZ.name = 'meshZ'
-							const meshZR = new THREE.Mesh(geometry, material);
-							meshZR.name = 'meshZR'
-							meshZR.rotation.set(0, Math.PI, 0);
-							const meshY = new THREE.Mesh(geometry, material);
-							meshY.name = 'meshY'
-							meshY.rotation.set(Math.PI / 2, 0, 0);
-							const meshYR = new THREE.Mesh(geometry, material);
-							meshYR.name = 'meshYR'
-							meshYR.rotation.set(Math.PI / 2, Math.PI, 0);
-							const meshX = new THREE.Mesh(geometry, material);
-							meshX.name = 'meshX'
-							meshX.rotation.set(0, Math.PI / 2, 0);
-							const meshXR = new THREE.Mesh(geometry, material);
-							meshXR.name = 'meshXR'
-							meshXR.rotation.set(0, -Math.PI / 2, 0);
-
-							for (let i = 0; i < meshes.length; i++) {
-								const mesh = meshes[i];
-								const intersectsTop = raycaster.intersectObject(mesh.top);
-								const intersectsRight = raycaster.intersectObject(mesh.right);
-								const intersectsRightX = raycaster.intersectObject(mesh.rightX);
-								if (mouseType == 'mousedown') {
-									leavTime = true
-									setTimeout(() => {
-										leavTime = false
-									}, 200)
-								}
-								if (mouseType == 'mouseup' && leavTime) {
-									const childElements = []
-									for (let j = 0; j < mesh.top.parent.children.length; j++) {
-										const element = mesh.top.parent.children[j];
-
-										if (!(element.name == 'meshZ' || element.name == 'meshZR' || element.name == 'meshY' || element.name == 'meshYR' || element.name == 'meshX' || element.name == 'meshXR')) {
-											childElements.push(element)
-										}
-									}
-									mesh.top.parent.children = childElements
-								}
-								if (intersectsTop.length > 0) {
-									orbitControls.enableRotate = false
-									if (mouseType == 'mousedown') {
-										mesh.dragTop = true
-									}
-									if (mouseType == 'mouseup') {
-										mesh.top.parent.add(meshZ)
-										mesh.top.parent.add(meshZR)
-									}
-								}
-								else if (intersectsRight.length > 0) {
-									orbitControls.enableRotate = false
-									if (mouseType == 'mousedown') {
-										mesh.dragRight = true
-									}
-									if (mouseType == 'mouseup') {
-										mesh.right.parent.add(meshY)
-										mesh.right.parent.add(meshYR)
-									}
-								}
-								else if (intersectsRightX.length > 0) {
-									orbitControls.enableRotate = false
-									if (mouseType == 'mousedown') {
-										mesh.dragRightX = true
-									}
-									if (mouseType == 'mouseup') {
-										mesh.rightX.parent.add(meshX)
-										mesh.rightX.parent.add(meshXR)
-									}
-								}
-								if (mouseType == 'mousemove' && mesh.dragTop) {
-									if (mouseLeaveX > event.clientX) {
-										mesh.element.rotateZ(+0.01)
-									} else {
-										mesh.element.rotateZ(-0.01)
-									}
-								}
-								if (mouseType == 'mousemove' && mesh.dragRight) {
-									if (mouseLeaveY > event.clientY) {
-										mesh.element.rotateY(-0.01)
-									} else {
-										mesh.element.rotateY(+0.01)
-									}
-								}
-								if (mouseType == 'mousemove' && mesh.dragRightX) {
-									if (mouseLeaveY > event.clientY) {
-										mesh.element.rotateX(-0.01)
-									} else {
-										mesh.element.rotateX(+0.01)
-									}
-								}
-
-								if (mouseType == 'mouseup') {
-									mesh.dragTop = false
-									mesh.dragRight = false
-									mesh.dragRightX = false
-									orbitControls.enableRotate = true
-
-								}
-							}
-
-							mouseLeaveX = event.clientX
-							mouseLeaveY = event.clientY
-						}
-
-						const meshes = [];
-						const spritePoint = new THREE.TextureLoader().load('assets/point1.png');
-						const spriteMaterial = new THREE.SpriteMaterial({ map: spritePoint });
-						const textureLoader = new THREE.TextureLoader();
-						const texture = textureLoader.load('assets/112.png');
-
-						for (let i = 0; i < scene.children.length; i++) {
-							const element = scene.children[i];
-							if (element.type == "Group") {
-								let top = true;
-								let right = true;
-								let rightX = true;
-								for (let j = 0; j < element.children.length; j++) {
-									const child = element.children[j]
-									if (child.name == 'pointTop') {
-										top = false
-									}
-
-									if (child.name == 'pointRight') {
-										right = false
-									}
-
-									if (child.name == 'pointRightX') {
-										rightX = false
-									}
-								}
-
-								const meshTop = new THREE.Sprite(spriteMaterial);
-								meshTop.scale.set(6, 2, 1);
-								meshTop.name = 'pointTop'
-								meshTop.position.set(0, 8, 0);
-
-								const meshRight = new THREE.Sprite(spriteMaterial);
-								meshRight.scale.set(6, 2, 1);
-								meshRight.position.set(8, 0, 0);
-								meshRight.name = 'pointRight'
-
-								const meshRightX = new THREE.Sprite(spriteMaterial);
-								meshRightX.scale.set(6, 2, 1);
-								meshRightX.position.set(0, 0, 8);
-								meshRightX.name = 'pointRightX'
-
-								meshes.push({
-									top: meshTop,
-									right: meshRight,
-									rightX: meshRightX,
-									element,
-									dragTop: false,
-									dragRight: false,
-									dragRightX: false,
-									click: false
-								})
-								if (top) {
-									element.add(meshTop)
-								}
-
-								if (right) {
-									element.add(meshRight)
-								}
-
-								if (rightX) {
-									element.add(meshRightX)
-								}
-							}
-						}
-						renderer.domElement.addEventListener('mousemove', (ev) => onClick(ev, meshes, 'mousemove'));
-						renderer.domElement.addEventListener('mousedown', (ev) => onClick(ev, meshes, 'mousedown'));
-						renderer.domElement.addEventListener('mouseup', (ev) => onClick(ev, meshes, 'mouseup'));
-						renderer.domElement.addEventListener('click', (ev) => onClick(ev, meshes, 'click'));
-						setTransformControls(transformControls);
-						break;
-					// case 82: // R
-					// 	transformControls.setMode('scale');
-					// 	break;
 					case 46: // D
 						if (transformControls.object) {
 							setPieces((oldPice) => Object.keys(oldPice).reduce((obj, k) => {
@@ -449,6 +467,8 @@ export default function StlViewer({
 
 			group.attach(coreModelMesh);
 			centerGroup(group);
+			clickEKey()
+			// clickWKey()
 		});
 
 		// loader.load(activeWing.path, (geometry) => {

@@ -22,6 +22,6 @@ export function createAnimate({ scene, camera, renderer }) {
 	return {
 		animate,
 		addTrigger,
-		offTrigger
+		offTrigger,
 	};
 }
