@@ -9,8 +9,6 @@ import { getIntersectObjectsOfClick } from './stlHelpers/getIntersectObjectsOfCl
 
 const loader = new Loader();
 const textureLoader = new THREE.TextureLoader();
-let mouseLeaveX
-let mouseLeaveY
 
 export default function StlViewer({
 	sizeX = 1400,
@@ -124,8 +122,6 @@ export default function StlViewer({
 
 	useEffect(() => {
 		if (orbitControls) {
-			console.log(orbitControls, 'orbitControls');
-
 			// add controls to window
 			// zoom parameters how much can zoom
 			orbitControls.maxDistance = 450;
@@ -175,11 +171,10 @@ export default function StlViewer({
 						intersection.z = element.position.z
 						raycaster.ray.intersectPlane(plane, intersection);
 						const mouseWorldPos = intersection;
-						console.log( mouseWorldPos.z);
 						element.position.x = mouseWorldPos.x;
 						element.position.y = mouseWorldPos.y;
 						element.position.z = mouseWorldPos.z ? mouseWorldPos.z : element.position.z;
-						
+
 						setTransformControls(transformControls);
 					}
 				}
@@ -208,6 +203,8 @@ export default function StlViewer({
 				const intersectsRight = raycaster.intersectObject(mesh.right);
 				const intersectsLeft = raycaster.intersectObject(mesh.left);
 
+				let mouseLeaveX = mesh.mouseLeaveX
+				let mouseLeaveY = mesh.mouseLeaveY
 
 				if (intersectsBottom.length > 0) {
 					orbitControls.enableRotate = false
@@ -235,38 +232,38 @@ export default function StlViewer({
 
 				if (mouseType == 'mousemove' && mesh.dragTop) {
 					if (mouseLeaveX > event.clientX) {
-						mesh.element.rotateX(positions.x / 35000)
-						mesh.element.rotateZ(positions.z / 35000)
+						mesh.element.rotateX(positions.x / 17500)
+						mesh.element.rotateZ(positions.z / 17500)
 					} else {
-						mesh.element.rotateX(-1 * positions.x / 35000)
-						mesh.element.rotateZ(-1 * positions.z / 35000)
+						mesh.element.rotateX(-1 * positions.x / 17500)
+						mesh.element.rotateZ(-1 * positions.z / 17500)
 					}
 				}
 
 				if (mouseType == 'mousemove' && mesh.dragBottom) {
 					if (mouseLeaveX > event.clientX) {
-						mesh.element.rotateX(-1 * positions.x / 35000)
-						mesh.element.rotateZ(-1 * positions.z / 35000)
+						mesh.element.rotateX(-1 * positions.x / 17500)
+						mesh.element.rotateZ(-1 * positions.z / 17500)
 					} else {
-						mesh.element.rotateZ(positions.z / 35000)
-						mesh.element.rotateX(positions.x / 35000)
+						mesh.element.rotateZ(positions.z / 17500)
+						mesh.element.rotateX(positions.x / 17500)
 					}
 				}
 
 				if (mouseType == 'mousemove' && mesh.dragLeft) {
 					if (mouseLeaveY > event.clientY) {
-						mesh.element.rotateY(-0.01)
+						mesh.element.rotateY(-0.02)
 					} else {
-						mesh.element.rotateY(+0.01)
+						mesh.element.rotateY(+0.02)
 					}
 				}
 
 
 				if (mouseType == 'mousemove' && mesh.dragRight) {
 					if (mouseLeaveY > event.clientY) {
-						mesh.element.rotateY(-0.01)
+						mesh.element.rotateY(-0.02)
 					} else {
-						mesh.element.rotateY(+0.01)
+						mesh.element.rotateY(+0.02)
 					}
 				}
 
@@ -279,10 +276,10 @@ export default function StlViewer({
 
 				}
 
+				mesh.mouseLeaveX = event.clientX
+				mesh.mouseLeaveY = event.clientY
 			}
 
-			mouseLeaveX = event.clientX
-			mouseLeaveY = event.clientY
 		}
 
 		const meshes = [];
@@ -344,7 +341,9 @@ export default function StlViewer({
 					dragTop: false,
 					dragBotom: false,
 					dragRight: false,
-					click: false
+					click: false,
+					mouseLeaveX: 0,
+					mouseLeaveY: 0,
 				})
 
 				if (top) {
@@ -374,6 +373,62 @@ export default function StlViewer({
 	useEffect(() => {
 		const handleDblClick = (event) => {
 			const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, [coreModelMesh], true);
+			const mouse = new THREE.Vector3(5, 2);
+			mouse.x = (event.clientX / 1400) * 2 - 1;
+			mouse.y = -(event.clientY / 1400) * 2 + 1;
+			const raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(mouse, camera);
+			for (let index = 0; index < scene.children.length; index++) {
+				const element = scene.children[index];
+				console.log(element);
+				if (element.type == 'Group') {
+
+					const intersectsGroup = raycaster.intersectObject(element.children[0]);
+					if (intersectsGroup.length > 0) {
+						const meshesArr = [];
+						for (let j = 0; j < element.children.length; j++) {
+							const mesh = element.children[j];
+							if(!(mesh.type == 'Mesh' && mesh.name == 'wing')){
+								meshesArr.push(mesh)
+							}
+						}
+						element.children = meshesArr
+						loader.load(activeWing.path, (geometry) => {
+							console.log(element);
+							
+							const whiteTexture = '/assets/whiteTextureBasic.jpg';
+							let wingModelMesh = undefined;
+							const material = new THREE.MeshMatcapMaterial({
+								color: 0xabdbe3, // color for texture
+								matcap: textureLoader.load(whiteTexture)
+							});
+							wingModelMesh = new THREE.Mesh(geometry, material);
+							wingModelMesh.geometry.computeVertexNormals();
+							wingModelMesh.geometry.center();
+							// rotations
+							wingModelMesh.rotation.y = activeWing?.rotations.y;  // will add some rotation
+							wingModelMesh.rotation.x = activeWing?.rotations.x;   // rotate model of core element
+							wingModelMesh.position.set(element.position.x, element.position.y, element.position.z)
+
+							//possitions
+							if (activeWing?.movedPos.x)
+								wingModelMesh.position.x += activeWing.movedPos.x;
+							if (activeWing?.movedPos.y)
+								wingModelMesh.position.y += activeWing.movedPos.y;
+							if (activeWing?.movedPos.z)
+								wingModelMesh.position.z += activeWing.movedPos.z;
+							// wingModelMesh.position.set(element.position.x, element.position.y, element.position.z)
+							// scales
+							wingModelMesh.scale.x = activeWing?.scale || 0.7;
+							wingModelMesh.scale.y = activeWing?.scale || 0.7;
+							wingModelMesh.scale.z = activeWing?.scale || 0.7;
+							wingModelMesh.name = 'wing'
+							element.attach(wingModelMesh);
+						});
+						return
+					}
+				}
+			}
 			if (intersects.length > 0) { // clicked on model or no
 				let intersect = intersects[0];
 				//show core screw/(implant) pices
