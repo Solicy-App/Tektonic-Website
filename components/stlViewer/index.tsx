@@ -55,23 +55,25 @@ export default function StlViewer({
 					e.preventDefault();
 					orbitControls.enableZoom = false;
 
-					const pos = camera.position
+					const pos = camera.position;
 					let x = 0;
 					let y = 0;
 					let z = 0;
 					if (pos.x > pos.y && pos.x > pos.z) {
-						x = 0.1;
-						y = pos.y / (pos.x * 10)
-						z = pos.z / (pos.x * 10)
+						x = 0;
+						y = 0.2;
+						z = 0;						
 					} else if (pos.y > pos.x && pos.y > pos.z) {
-						y = 0.1;
-						x = pos.y / (pos.y * 10)
-						z = pos.z / (pos.y * 10)
+						y = 0;
+						x = 0.2;
+						z = 0;
 					} else if (pos.z > pos.x && pos.z > pos.y) {
-						z = 0.1;
-						x = pos.y / (pos.z * 10)
-						z = pos.z / (pos.z * 10)
+						z = 0;
+						x = 0;
+						y = 0.2;
 					}
+									
+										
 					intersects[0].object.parent.rotateX(x)
 					intersects[0].object.parent.rotateY(y)
 					intersects[0].object.parent.rotateZ(z)
