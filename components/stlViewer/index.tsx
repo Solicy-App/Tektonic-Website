@@ -62,15 +62,18 @@ export default function StlViewer({
 					if (pos.x > pos.y && pos.x > pos.z) {
 						x = 0;
 						y = 0.2;
-						z = 0;						
-					} else if (pos.y > pos.x && pos.y > pos.z) {
-						y = 0;
-						x = 0.2;
 						z = 0;
+						console.log("xxxxxxxxxxxx");						
+					} else if (pos.y > pos.x && pos.y > pos.z) {
+						y = 0.2;
+						x = 0;
+						z = 0;
+						console.log("yyyyyyyyyyyy")
 					} else if (pos.z > pos.x && pos.z > pos.y) {
 						z = 0;
 						x = 0;
 						y = 0.2;
+						console.log("zzzzzzzzzz");
 					}
 									
 										
