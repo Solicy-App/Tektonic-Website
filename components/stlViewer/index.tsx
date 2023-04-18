@@ -23,7 +23,7 @@ export default function StlViewer({
 	const [orbitControlsValues, setOrbitControlsValues] = useState<any>({
 		LEFT: THREE.MOUSE.ROTATE,
 		MIDDLE: THREE.MOUSE.PAN,
-		RIGHT: THREE.MOUSE.PAN,  // for now it's as the same like the middle button
+		RIGHT: THREE.MOUSE.ROTATE,  // for now it's as the same like the middle button
 	});
 	const [renderer, setRenderer] = useState(undefined);
 	const [camera, setCamera] = useState(undefined);
