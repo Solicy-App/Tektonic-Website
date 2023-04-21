@@ -10,7 +10,7 @@ const wings = [
 	{
 		path: '/assets/tektonicWings/tectonic_angle2.stl',
 		preview: '/assets/tektonicWings/tectonic_angle1_preview.png',
-		name: 'long tectonic',
+		name: 'angle1',
 		rotations: { x: 1.5, y: 0.2 },
 		scale: 0.7,
 		movedPos: { x: 1, z: -1, y: -1 }
@@ -26,7 +26,7 @@ const wings = [
 	{
 		path: '/assets/tektonicWings/tectonic_long.stl',
 		preview: '/assets/tektonicWings/tectonic_long_preview.png',
-		name: 'angle1',
+		name: 'long tectonic',
 		rotations: { x: 1.5, y: 0.2 },
 		scale: 0.7,
 		movedPos: { x: 4 }
