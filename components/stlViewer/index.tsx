@@ -81,11 +81,11 @@ export default function StlViewer({
 				if (intersects.length) {
 
 					transformControls.attach(intersects[0].object.parent);
-					renderer.domElement.addEventListener('wheel', scrollRotate);
-					scrollRotateEvent = scrollRotate;
+					// renderer.domElement.addEventListener('wheel', scrollRotate);
+					// scrollRotateEvent = scrollRotate;
 				} else {
 					orbitControls.enableZoom = true;
-					renderer.domElement.removeEventListener('wheel', scrollRotateEvent);
+					// renderer.domElement.removeEventListener('wheel', scrollRotateEvent);
 					transformControls.detach();
 				}
 			}
@@ -382,7 +382,6 @@ export default function StlViewer({
 				const element = scene.children[index];
 				console.log(element);
 				if (element.type == 'Group') {
-
 					const intersectsGroup = raycaster.intersectObject(element.children[0]);
 					if (intersectsGroup.length > 0) {
 						const meshesArr = [];
@@ -417,7 +416,6 @@ export default function StlViewer({
 								wingModelMesh.position.y += activeWing.movedPos.y;
 							if (activeWing?.movedPos.z)
 								wingModelMesh.position.z += activeWing.movedPos.z;
-							// wingModelMesh.position.set(element.position.x, element.position.y, element.position.z)
 							// scales
 							wingModelMesh.scale.x = activeWing?.scale || 0.7;
 							wingModelMesh.scale.y = activeWing?.scale || 0.7;
@@ -431,10 +429,8 @@ export default function StlViewer({
 			}
 			if (intersects.length > 0) { // clicked on model or no
 				let intersect = intersects[0];
-				//show core screw/(implant) pices
 				const core = addCorePieces(intersect, scene, loader);
 				setScene(core)
-
 			}
 		};
 
@@ -488,6 +484,7 @@ export default function StlViewer({
 			mesh.geometry.center();
 			// will add click method to object
 			setCoreModelMesh(mesh);
+			mesh.name = "jaw"
 			mesh.rotateY(0.5)
 			scene.add(mesh);
 		});
@@ -501,7 +498,6 @@ export default function StlViewer({
 		const coreModelPath = '/assets/tektonicCoreParts/CoreStep.stl';
 		const whiteTexture = '/assets/whiteTextureBasic.jpg';
 		let coreModelMesh = undefined;
-		let wingModelMesh = undefined;
 
 		const group = new THREE.Group();
 
@@ -517,43 +513,13 @@ export default function StlViewer({
 			coreModelMesh.position.copy(intersect.point);
 			coreModelMesh.rotation.z = 1.65;  // will add some rotation
 			coreModelMesh.rotation.x = -0.1;   // rotate model of core element
-
+			coreModelMesh.name = "coreModelMesh"
 			coreModelMesh.geometry.center();
 
 			group.attach(coreModelMesh);
 			centerGroup(group);
 			clickEKey()
-			// clickWKey()
 		});
-
-		// loader.load(activeWing.path, (geometry) => {
-		// 	const material = new THREE.MeshMatcapMaterial({
-		// 		color: 0xabdbe3, // color for texture
-		// 		matcap: textureLoader.load(whiteTexture)
-		// 	});
-		// 	wingModelMesh = new THREE.Mesh(geometry, material);
-		// 	wingModelMesh.geometry.computeVertexNormals();
-		// 	wingModelMesh.geometry.center();
-		// 	wingModelMesh.position.copy(intersect.point);
-		// 	// rotations
-		// 	wingModelMesh.rotation.y = activeWing?.rotations.y;  // will add some rotation
-		// 	wingModelMesh.rotation.x = activeWing?.rotations.x;   // rotate model of core element
-
-		// 	//possitions
-		// 	if (activeWing?.movedPos.x)
-		// 		wingModelMesh.position.x += activeWing?.movedPos.x;
-		// 	if (activeWing?.movedPos.y)
-		// 		wingModelMesh.position.y += activeWing?.movedPos.y;
-		// 	if (activeWing?.movedPos.z)
-		// 		wingModelMesh.position.z += activeWing?.movedPos.z;
-
-		// 	// scales
-		// 	wingModelMesh.scale.x = activeWing?.scale || 0.7;
-		// 	wingModelMesh.scale.y = activeWing?.scale || 0.7;
-		// 	wingModelMesh.scale.z = activeWing?.scale || 0.7;
-		// 	group.attach(wingModelMesh);
-		// 	centerGroup(group);
-		// });
 
 		setPieces((prevPieces) => {
 			let pieces = Object.assign({}, prevPieces);
@@ -568,8 +534,39 @@ export default function StlViewer({
 		scene.attach(transformControls);
 		return scene
 	};
+	const [file, setFile] = useState(null)
+
+	const handleFileUpload = (event) => {
+		const uploadedFile = event.target.files[0]
+		setFile(uploadedFile)
+	}
+
+	const handleSubmit = (event) => {
+		event.preventDefault()
+		console.log(file)
+		scene.remove.apply(scene, scene.children);
+
+		loader.load("assets/" + file.name, (geometry) => {
+			const material = new THREE.MeshMatcapMaterial({
+				color: 0xffffff, // color for texture
+				matcap: textureLoader.load(pathToModelTexture)
+			});
+			const mesh = new THREE.Mesh(geometry, material);
+			mesh.geometry.computeVertexNormals();
+			mesh.geometry.center();
+			// will add click method to object
+			setCoreModelMesh(mesh);
+			mesh.rotateY(0.5)
+			mesh.name = "jaw"
+			scene.add(mesh);
+		});
+	};
 
 	return (<>
+		<form onSubmit={handleSubmit}>
+			<input type="file" accept=".stl" onChange={handleFileUpload} />
+			<button type="submit">Upload</button>
+		</form>
 		<div id='info' style={{
 			position: 'absolute',
 			top: '0px',
