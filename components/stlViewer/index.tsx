@@ -30,9 +30,7 @@ export default function StlViewer({
 	const [scene, setScene] = useState(undefined);
 	const [coreModelMesh, setCoreModelMesh] = useState(null);
 	const [pieces, setPieces] = useState({});
-	const [draggingControl, setDraggingControl] = useState(false);
-
-	let scrollRotateEvent;
+	// const [draggingControl, setDraggingControl] = useState(false);
 
 	useEffect(() => {
 		setScene(new THREE.Scene());
@@ -49,46 +47,15 @@ export default function StlViewer({
 
 	useEffect(() => {
 		const handleClick = (event) => {
-			if (!draggingControl) {
+			// if (!draggingControl) {
 				const intersects = getIntersectObjectsOfClick(event, sizeX, sizeY, camera, Object.values(pieces));
-				const scrollRotate = (e) => {
-					e.preventDefault();
-					orbitControls.enableZoom = false;
-
-					const pos = camera.position
-					let x = 0;
-					let y = 0;
-					let z = 0;
-					if (pos.x > pos.y && pos.x > pos.z) {
-						x = 0.1;
-						y = pos.y / (pos.x * 10)
-						z = pos.z / (pos.x * 10)
-					} else if (pos.y > pos.x && pos.y > pos.z) {
-						y = 0.1;
-						x = pos.y / (pos.y * 10)
-						z = pos.z / (pos.y * 10)
-					} else if (pos.z > pos.x && pos.z > pos.y) {
-						z = 0.1;
-						x = pos.y / (pos.z * 10)
-						z = pos.z / (pos.z * 10)
-					}
-					intersects[0].object.parent.rotateX(x)
-					intersects[0].object.parent.rotateY(y)
-					intersects[0].object.parent.rotateZ(z)
-
-					return
-				}
 				if (intersects.length) {
-
 					transformControls.attach(intersects[0].object.parent);
-					// renderer.domElement.addEventListener('wheel', scrollRotate);
-					// scrollRotateEvent = scrollRotate;
 				} else {
 					orbitControls.enableZoom = true;
-					// renderer.domElement.removeEventListener('wheel', scrollRotateEvent);
 					transformControls.detach();
 				}
-			}
+			// }
 		}
 
 		if (renderer && transformControls) {
@@ -100,7 +67,7 @@ export default function StlViewer({
 				renderer.domElement.removeEventListener('click', handleClick);
 			};
 		}
-	}, [renderer, transformControls, pieces, draggingControl]);
+	}, [renderer, transformControls, pieces]);
 
 	useEffect(() => {
 		if (renderer && camera && scene) {
@@ -126,6 +93,8 @@ export default function StlViewer({
 			// zoom parameters how much can zoom
 			orbitControls.maxDistance = 450;
 			orbitControls.minDistance = 125;
+			orbitControls.enableRotate = false;
+			orbitControls.enablePan = false;
 			orbitControls.mouseButtons = orbitControlsValues;
 		}
 	}, [orbitControls]);
@@ -160,8 +129,6 @@ export default function StlViewer({
 					if (mouseType == "mousemove" && element['mousedown']) {
 						mouse.x = (event.clientX / 1400) * 2 - 1;
 						mouse.y = -(event.clientY / 1400) * 2 + 1;
-						// element.position.x = mouse.x * 85;
-						// element.position.y = mouse.y * 85;
 						const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0); // plane parallel to screen
 						const raycaster = new THREE.Raycaster();
 						raycaster.setFromCamera(mouse, camera);
@@ -187,8 +154,8 @@ export default function StlViewer({
 				if (element.type == 'Group') {
 					if (mouseType == "mouseup") {
 						element['mousedown'] = false
-						orbitControls.enablePan = true;
-						orbitControls.enableRotate = true;
+						orbitControls.enablePan = false;
+						orbitControls.enableRotate = false;
 						setTransformControls(transformControls);
 					}
 				}
@@ -272,7 +239,12 @@ export default function StlViewer({
 					mesh.dragBottom = false
 					mesh.dragRight = false
 					mesh.dragLeft = false
-					orbitControls.enableRotate = true
+					if(event.which == 1){
+						orbitControls.enableRotate = true
+					}
+					if(event.which == 3){
+						orbitControls.enablePan = true
+					}
 
 				}
 
@@ -382,6 +354,7 @@ export default function StlViewer({
 				const element = scene.children[index];
 				console.log(element);
 				if (element.type == 'Group') {
+
 					const intersectsGroup = raycaster.intersectObject(element.children[0]);
 					if (intersectsGroup.length > 0) {
 						const meshesArr = [];
@@ -416,7 +389,6 @@ export default function StlViewer({
 								wingModelMesh.position.y += activeWing.movedPos.y;
 							if (activeWing?.movedPos.z)
 								wingModelMesh.position.z += activeWing.movedPos.z;
-							// scales
 							wingModelMesh.scale.x = activeWing?.scale || 0.7;
 							wingModelMesh.scale.y = activeWing?.scale || 0.7;
 							wingModelMesh.scale.z = activeWing?.scale || 0.7;
@@ -429,6 +401,7 @@ export default function StlViewer({
 			}
 			if (intersects.length > 0) { // clicked on model or no
 				let intersect = intersects[0];
+				//show core screw/(implant) pices
 				const core = addCorePieces(intersect, scene, loader);
 				setScene(core)
 			}
@@ -451,7 +424,6 @@ export default function StlViewer({
 			});
 			transformControls.addEventListener('dragging-changed', event => {
 				orbitControls.enabled = !event.value;
-				setDraggingControl(event.value);
 			});
 
 			window.addEventListener('keydown', event => {
@@ -484,7 +456,6 @@ export default function StlViewer({
 			mesh.geometry.center();
 			// will add click method to object
 			setCoreModelMesh(mesh);
-			mesh.name = "jaw"
 			mesh.rotateY(0.5)
 			scene.add(mesh);
 		});
@@ -513,14 +484,14 @@ export default function StlViewer({
 			coreModelMesh.position.copy(intersect.point);
 			coreModelMesh.rotation.z = 1.65;  // will add some rotation
 			coreModelMesh.rotation.x = -0.1;   // rotate model of core element
-			coreModelMesh.name = "coreModelMesh"
+
 			coreModelMesh.geometry.center();
 
 			group.attach(coreModelMesh);
 			centerGroup(group);
 			clickEKey()
+			// clickWKey()
 		});
-
 		setPieces((prevPieces) => {
 			let pieces = Object.assign({}, prevPieces);
 			pieces[group.uuid] = group;
@@ -534,6 +505,7 @@ export default function StlViewer({
 		scene.attach(transformControls);
 		return scene
 	};
+
 	const [file, setFile] = useState(null)
 
 	const handleFileUpload = (event) => {

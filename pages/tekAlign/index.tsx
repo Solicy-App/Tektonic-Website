@@ -9,7 +9,7 @@ import StlViewer from 'components/stlViewer';
 const wings = [
 	{
 		path: '/assets/tektonicWings/tectonic_long.stl',
-		preview: '/assets/tektonicWings/tectonic_angle1_preview.png',
+		preview: '/assets/tektonicWings/tectonic_long_preview.png',
 		name: 'angle1',
 		rotations: { x: 1.5, y: 0.2 },
 		scale: 0.7,
@@ -17,7 +17,7 @@ const wings = [
 	},
 	{
 		path: '/assets/tektonicWings/tectonic_angle1.stl',
-		preview: '/assets/tektonicWings/tectonic_angle2_preview.png',
+		preview: '/assets/tektonicWings/tectonic_angle1_preview.png',
 		name: 'angle2',
 		rotations: { x: 1.5, y: 0.2 },
 		scale: 0.7,
@@ -25,7 +25,7 @@ const wings = [
 	},
 	{
 		path: '/assets/tektonicWings/tectonic_angle2.stl',
-		preview: '/assets/tektonicWings/tectonic_long_preview.png',
+		preview: '/assets/tektonicWings/tectonic_angle2_preview.png',
 		name: 'long tectonic',
 		rotations: { x: 1.5, y: 0.2 },
 		scale: 0.7,
