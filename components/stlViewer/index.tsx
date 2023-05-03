@@ -349,7 +349,7 @@ export default function StlViewer({
 				camera,
 				[coreModelMesh],
 				true
-			);
+			);			
 			const mouse = new THREE.Vector3(5, 2);
 			mouse.x = (event.clientX / 1400) * 2 - 1;
 			mouse.y = -(event.clientY / 1400) * 2 + 1;
@@ -484,12 +484,20 @@ export default function StlViewer({
 
 		const group = new THREE.Group();
 
+		const geometry = new THREE.SphereGeometry( 0.5, 64, 36 ); 
+		const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } ); 
+		const circle = new THREE.Mesh( geometry, material ); 
+		circle.position.set(intersect.point.x,intersect.point.y,intersect.point.z);
+		scene.add( circle );
+
 		// render model
 		loader.load(coreModelPath, (geometry) => {
 			const material = new THREE.MeshMatcapMaterial({
 				color: 0xffffff, // color for texture
 				matcap: textureLoader.load(whiteTexture)
 			});
+
+			
 			coreModelMesh = new THREE.Mesh(geometry, material);
 			coreModelMesh.geometry.computeVertexNormals();
 			coreModelMesh.geometry.center();
