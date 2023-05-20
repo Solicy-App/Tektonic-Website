@@ -8,8 +8,8 @@ import StlViewer from 'components/stlViewer';
 
 const wings = [
 	{
+		preview: '/assets/tektonicWings/tectonic_long_preview.png',
 		path: '/assets/tektonicWings/tectonic_long.stl',
-		preview: '/assets/tektonicWings/tectonic_angle1_preview.png',
 		name: 'angle1',
 		subName: 'angle1',
 		rotations: { x: 1.4, y: 0.2 },
@@ -26,8 +26,8 @@ const wings = [
 		movedPos: { x: 0, z: -2, y: -2 }
 	},
 	{
+		preview: '/assets/tektonicWings/tectonic_angle1_preview.png',
 		path: '/assets/tektonicWings/tectonic_angle2.stl',
-		preview: '/assets/tektonicWings/tectonic_long_preview.png',
 		name: 'long tectonic',
 		subName: 'angle3 long tectonic',
 		rotations: { x: 1.6, y: 0.1 },
