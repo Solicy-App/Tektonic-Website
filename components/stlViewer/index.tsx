@@ -483,9 +483,39 @@ export default function StlViewer({
 			coreModelMesh.rotation.x = -0.1; // rotate model of core element
 
 			coreModelMesh.geometry.center();
-
+			
 			group.attach(coreModelMesh);
 			centerGroup(group);
+			for (let i = 0; i < wingsMesh.length; i++) {
+				loader.load(wingsMesh[i].path, (geometry) => {
+					const whiteTexture = '/assets/whiteTextureBasic.jpg';
+					let wingModelMesh = undefined;
+					const material = new THREE.MeshMatcapMaterial({
+						color: 0xabdbe3, // color for texture
+						matcap: textureLoader.load(whiteTexture)
+					});
+					wingModelMesh = new THREE.Mesh(geometry, material);
+					wingModelMesh.geometry.computeVertexNormals();
+					wingModelMesh.geometry.center();
+					// rotations
+					wingModelMesh.rotation.y = wingsMesh[i]?.rotations.y; // will add some rotation
+					wingModelMesh.rotation.x = wingsMesh[i]?.rotations.x; // rotate model of core element
+					wingModelMesh.position.set(group.position.x, group.position.y, group.position.z);
+					wingModelMesh.visible = false;
+
+					//possitions
+					if (wingsMesh[i]?.movedPos.x) wingModelMesh.position.x += wingsMesh[i].movedPos.x;
+					if (wingsMesh[i]?.movedPos.y) wingModelMesh.position.y += wingsMesh[i].movedPos.y;
+					if (wingsMesh[i]?.movedPos.z) wingModelMesh.position.z += wingsMesh[i].movedPos.z;
+					// wingModelMesh.position.set(group.position.x, group.position.y, group.position.z)
+					// scales
+					wingModelMesh.scale.x = wingsMesh[i]?.scale || 0.7;
+					wingModelMesh.scale.y = wingsMesh[i]?.scale || 0.7;
+					wingModelMesh.scale.z = wingsMesh[i]?.scale || 0.7;
+					wingModelMesh.name = wingsMesh[i].name;
+					group.attach(wingModelMesh);
+				});
+			}
 			clickEKey();
 			// clickWKey()
 		});
@@ -519,36 +549,6 @@ export default function StlViewer({
 		// 	centerGroup(group);
 		// });
 
-		for (let i = 0; i < wingsMesh.length; i++) {
-			loader.load(wingsMesh[i].path, (geometry) => {
-				const whiteTexture = '/assets/whiteTextureBasic.jpg';
-				let wingModelMesh = undefined;
-				const material = new THREE.MeshMatcapMaterial({
-					color: 0xabdbe3, // color for texture
-					matcap: textureLoader.load(whiteTexture)
-				});
-				wingModelMesh = new THREE.Mesh(geometry, material);
-				wingModelMesh.geometry.computeVertexNormals();
-				wingModelMesh.geometry.center();
-				// rotations
-				wingModelMesh.rotation.y = wingsMesh[i]?.rotations.y; // will add some rotation
-				wingModelMesh.rotation.x = wingsMesh[i]?.rotations.x; // rotate model of core element
-				wingModelMesh.position.set(group.position.x, group.position.y, group.position.z);
-				wingModelMesh.visible = false;
-
-				//possitions
-				if (wingsMesh[i]?.movedPos.x) wingModelMesh.position.x += wingsMesh[i].movedPos.x;
-				if (wingsMesh[i]?.movedPos.y) wingModelMesh.position.y += wingsMesh[i].movedPos.y;
-				if (wingsMesh[i]?.movedPos.z) wingModelMesh.position.z += wingsMesh[i].movedPos.z;
-				// wingModelMesh.position.set(group.position.x, group.position.y, group.position.z)
-				// scales
-				wingModelMesh.scale.x = wingsMesh[i]?.scale || 0.7;
-				wingModelMesh.scale.y = wingsMesh[i]?.scale || 0.7;
-				wingModelMesh.scale.z = wingsMesh[i]?.scale || 0.7;
-				wingModelMesh.name = wingsMesh[i].name;
-				group.attach(wingModelMesh);
-			});
-		}
 
 		setPieces((prevPieces) => {
 			let pieces = Object.assign({}, prevPieces);
