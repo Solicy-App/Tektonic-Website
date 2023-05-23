@@ -156,22 +156,17 @@ export default function StlViewer({
 						orbitControls.enableRotate = false;
 					}
 					if (mouseType == 'mousemove' && element['mousedown']) {
-						mouse.x = (event.clientX / 1400) * 2 - 1;
-						mouse.y = -(event.clientY / 1400) * 2 + 1;
-						// element.position.x = mouse.x * 85;
-						// element.position.y = mouse.y * 85;
-						const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0); // plane parallel to screen
-						const raycaster = new THREE.Raycaster();
-						raycaster.setFromCamera(mouse, camera);
-						const intersection = new THREE.Vector3();
-						intersection.x = element.position.x;
-						intersection.y = element.position.y;
-						intersection.z = element.position.z;
-						raycaster.ray.intersectPlane(plane, intersection);
-						const mouseWorldPos = intersection;
-						element.position.x = mouseWorldPos.x;
-						element.position.y = mouseWorldPos.y;
-						element.position.z = mouseWorldPos.z ? mouseWorldPos.z : element.position.z;
+						const movementScale = 0.085;
+						const worldCoordinates = new THREE.Vector3(mouse.x * 210, mouse.y * 205, 0);
+						worldCoordinates.unproject(camera);
+						
+						const movementX = worldCoordinates.x - element.position.x;
+						const movementY = worldCoordinates.y - element.position.y;
+						const movementZ = worldCoordinates.z - element.position.z;
+
+						element.position.x =  movementX * movementScale;
+						element.position.y =  movementY * movementScale;
+						element.position.z =  movementZ * movementScale;
 
 						setTransformControls(transformControls);
 					}
@@ -378,12 +373,12 @@ export default function StlViewer({
 				const element = scene.children[index];
 				if (element.type == 'Group') {
 					const intersectsGroup = raycaster.intersectObject(element.children[0]);
-					if (intersectsGroup.length > 0) {
+					if (intersectsGroup?.length > 0) {
 						for (let index = 0; index < element.children.length; index++) {
 							const el = element.children[index];
-							if (el.name == activeWing.subName && el.name.search('angle') != -1) {
+							if (el?.name == activeWing.name && el?.name?.search('angle') != -1) {
 								el.visible = true;
-							} else if (el.name.search('angle') != -1) {
+							} else if (el?.name?.search('angle') != -1) {
 								el.visible = false;
 							}
 						}
