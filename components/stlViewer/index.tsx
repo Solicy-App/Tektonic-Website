@@ -33,7 +33,8 @@ export default function StlViewer({
 	const [pieces, setPieces] = useState({});
 	const [draggingControl, setDraggingControl] = useState(false);
 
-	let scrollRotateEvent;
+	const rotationSpeed = 0.01;
+	let dragDirection = '';
 
 	useEffect(() => {
 		setScene(new THREE.Scene());
@@ -53,40 +54,10 @@ export default function StlViewer({
 					camera,
 					Object.values(pieces)
 				);
-				const scrollRotate = (e) => {
-					e.preventDefault();
-					orbitControls.enableZoom = false;
-
-					const pos = camera.position;
-					let x = 0;
-					let y = 0;
-					let z = 0;
-					if (pos.x > pos.y && pos.x > pos.z) {
-						x = 0.1;
-						y = pos.y / (pos.x * 10);
-						z = pos.z / (pos.x * 10);
-					} else if (pos.y > pos.x && pos.y > pos.z) {
-						y = 0.1;
-						x = pos.y / (pos.y * 10);
-						z = pos.z / (pos.y * 10);
-					} else if (pos.z > pos.x && pos.z > pos.y) {
-						z = 0.1;
-						x = pos.y / (pos.z * 10);
-						z = pos.z / (pos.z * 10);
-					}
-					intersects[0].object.parent.rotateX(x);
-					intersects[0].object.parent.rotateY(y);
-					intersects[0].object.parent.rotateZ(z);
-
-					return;
-				};
 				if (intersects.length) {
 					transformControls.attach(intersects[0].object.parent);
-					renderer.domElement.addEventListener('wheel', scrollRotate);
-					scrollRotateEvent = scrollRotate;
 				} else {
 					orbitControls.enableZoom = true;
-					renderer.domElement.removeEventListener('wheel', scrollRotateEvent);
 					transformControls.detach();
 				}
 			}
@@ -129,7 +100,7 @@ export default function StlViewer({
 			orbitControls.mouseButtons = orbitControlsValues;
 		}
 	}, [orbitControls]);
-
+	let rotateGroup = true;
 	const clickEKey = () => {
 		transformControls.dragging = false;
 		transformControls.enabled = false;
@@ -149,43 +120,35 @@ export default function StlViewer({
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
-					const intersectsGroup = raycaster.intersectObject(element.children[0]);
+					const intersectsGroup = raycaster?.intersectObject(element.children[0]);
 					if (mouseType == 'mousedown' && intersectsGroup.length > 0) {
 						element['mousedown'] = true;
 						orbitControls.enablePan = false;
 						orbitControls.enableRotate = false;
 					}
 					if (mouseType == 'mousemove' && element['mousedown']) {
-						mouse.x = (event.clientX / 1400) * 2 - 1;
-						mouse.y = -(event.clientY / 1400) * 2 + 1;
-						// element.position.x = mouse.x * 85;
-						// element.position.y = mouse.y * 85;
-						const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0); // plane parallel to screen
-						const raycaster = new THREE.Raycaster();
-						raycaster.setFromCamera(mouse, camera);
-						const intersection = new THREE.Vector3();
-						intersection.x = element.position.x;
-						intersection.y = element.position.y;
-						intersection.z = element.position.z;
-						raycaster.ray.intersectPlane(plane, intersection);
-						const mouseWorldPos = intersection;
-						element.position.x = mouseWorldPos.x;
-						element.position.y = mouseWorldPos.y;
-						element.position.z = mouseWorldPos.z ? mouseWorldPos.z : element.position.z;
+						const movementScale = 0.085;
+						const worldCoordinates = new THREE.Vector3(mouse.x * 210, mouse.y * 205, 0);
+						worldCoordinates.unproject(camera);
+						rotateGroup = false;
+						const movementX = worldCoordinates.x - element.position.x;
+						const movementY = worldCoordinates.y - element.position.y;
+						const movementZ = worldCoordinates.z - element.position.z;
+
+						element.position.x = movementX * movementScale;
+						element.position.y = movementY * movementScale;
+						element.position.z = movementZ * movementScale;
 
 						setTransformControls(transformControls);
 					}
-				}
-			}
-
-			for (let index = 0; index < scene.children.length; index++) {
-				const element = scene.children[index];
-				if (element.type == 'Group') {
 					if (mouseType == 'mouseup') {
 						element['mousedown'] = false;
 						orbitControls.enablePan = true;
 						orbitControls.enableRotate = true;
 						setTransformControls(transformControls);
+						rotateGroup = true;
+						isDragging = false;
+						dragDirection = '';
 					}
 				}
 			}
@@ -199,6 +162,46 @@ export default function StlViewer({
 
 				let mouseLeaveX = mesh.mouseLeaveX;
 				let mouseLeaveY = mesh.mouseLeaveY;
+				const cameraToTop = new THREE.Vector3().subVectors(mesh.top.position, camera.position);
+				cameraToTop.normalize();
+				const angleTop = cameraToTop.angleTo(camera.getWorldDirection(new THREE.Vector3()));
+				const angleTopDegrees = THREE.MathUtils.radToDeg(angleTop);
+
+				// if (mesh.element.rotation._z > 0) {
+				if (angleTopDegrees >= 1.15 && angleTopDegrees <= 1.33) {
+					mesh.right.visible = false;
+					mesh.left.visible = false;
+					mesh.top.visible = true;
+					mesh.bottom.visible = true;
+				} else if (angleTopDegrees >= 0.17 && angleTopDegrees < 1) {
+					mesh.right.visible = true;
+					mesh.left.visible = true;
+					mesh.top.visible = false;
+					mesh.bottom.visible = false;
+				} else {
+					mesh.right.visible = false;
+					mesh.left.visible = false;
+					mesh.top.visible = false;
+					mesh.bottom.visible = false;
+				}
+				// } else {
+				// 	if (angleTopDegrees >= 1) {
+				// 		mesh.right.visible = true;
+				// 		mesh.left.visible = true;
+				// 		mesh.top.visible = false;
+				// 		mesh.bottom.visible = false;
+				// 	} else if (angleTopDegrees >= 0.17 && angleTopDegrees < 1) {
+				// 		mesh.right.visible = false;
+				// 		mesh.left.visible = false;
+				// 		mesh.top.visible = true;
+				// 		mesh.bottom.visible = true;
+				// 	} else {
+				// 		mesh.right.visible = false;
+				// 		mesh.left.visible = false;
+				// 		mesh.top.visible = false;
+				// 		mesh.bottom.visible = false;
+				// 	}
+				// }
 
 				if (intersectsBottom.length > 0) {
 					orbitControls.enableRotate = false;
@@ -221,6 +224,10 @@ export default function StlViewer({
 						mesh.dragLeft = true;
 					}
 				}
+				if (!rotateGroup) return;
+
+				isDragging = true;
+				dragDirection = '';
 
 				if (mouseType == 'mousemove' && mesh.dragTop) {
 					if (mouseLeaveX > event.clientX) {
@@ -243,19 +250,23 @@ export default function StlViewer({
 				}
 
 				if (mouseType == 'mousemove' && mesh.dragLeft) {
-					if (mouseLeaveY > event.clientY) {
-						mesh.element.rotateY(-0.02);
-					} else {
-						mesh.element.rotateY(+0.02);
-					}
+					dragDirection = 'dragLeft';
 				}
 
 				if (mouseType == 'mousemove' && mesh.dragRight) {
-					if (mouseLeaveY > event.clientY) {
-						mesh.element.rotateY(-0.02);
-					} else {
-						mesh.element.rotateY(+0.02);
-					}
+					dragDirection = 'dragRight';
+				}
+
+				const deltaX = event.clientX - mesh.mouseLeaveX;
+				const deltaY = event.clientY - mesh.mouseLeaveY;
+
+				switch (dragDirection) {
+					case 'dragLeft':
+						mesh.element.rotation.y += deltaX * rotationSpeed;
+						break;
+					case 'dragRight':
+						mesh.element.rotation.y -= deltaX * rotationSpeed;
+						break;
 				}
 
 				if (mouseType == 'mouseup') {
@@ -377,13 +388,13 @@ export default function StlViewer({
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
-					const intersectsGroup = raycaster.intersectObject(element.children[0]);
-					if (intersectsGroup.length > 0) {
+					const intersectsGroup = raycaster?.intersectObject(element.children[0]);
+					if (intersectsGroup?.length > 0) {
 						for (let index = 0; index < element.children.length; index++) {
 							const el = element.children[index];
-							if (el.name == activeWing.subName && el.name.search('angle') != -1) {
+							if (el?.name == activeWing.name && el?.name?.search('angle') != -1) {
 								el.visible = true;
-							} else if (el.name.search('angle') != -1) {
+							} else if (el?.name?.search('angle') != -1) {
 								el.visible = false;
 							}
 						}
@@ -483,7 +494,7 @@ export default function StlViewer({
 			coreModelMesh.rotation.x = -0.1; // rotate model of core element
 
 			coreModelMesh.geometry.center();
-			
+
 			group.attach(coreModelMesh);
 			centerGroup(group);
 			for (let i = 0; i < wingsMesh.length; i++) {
@@ -548,7 +559,6 @@ export default function StlViewer({
 		// 	group.attach(wingModelMesh);
 		// 	centerGroup(group);
 		// });
-
 
 		setPieces((prevPieces) => {
 			let pieces = Object.assign({}, prevPieces);
