@@ -126,7 +126,7 @@ export default function StlViewer({
 						orbitControls.enablePan = false;
 						orbitControls.enableRotate = false;
 					}
-					console.log(mouseType, element);
+					console.log(mouseType, 'element[mousedown],', element['mousedown']);
 					
 					if (mouseType == 'mousemove' && element['mousedown']) {
 						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>');
