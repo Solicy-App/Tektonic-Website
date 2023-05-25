@@ -116,11 +116,11 @@ export default function StlViewer({
 			mouse.y = -(event.clientY / 1400) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, camera);
-			console.log(mouse, camera);
-
+			
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
+					console.log('element.children[0]', element.children[0]);
 					const intersectsGroup = raycaster?.intersectObject(element.children[0], false);
 					console.log(intersectsGroup);
 					
