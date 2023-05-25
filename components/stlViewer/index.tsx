@@ -147,7 +147,6 @@ export default function StlViewer({
 						orbitControls.enableRotate = true;
 						setTransformControls(transformControls);
 						rotateGroup = true;
-						isDragging = false;
 						dragDirection = '';
 					}
 				}
@@ -226,7 +225,6 @@ export default function StlViewer({
 				}
 				if (!rotateGroup) return;
 
-				isDragging = true;
 				dragDirection = '';
 
 				if (mouseType == 'mousemove' && mesh.dragTop) {
