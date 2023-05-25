@@ -384,7 +384,7 @@ export default function StlViewer({
 				[coreModelMesh],
 				true
 			);
-			const mouse = new THREE.Vector2(5, 2);
+			const mouse = new THREE.Vector3(5, 2);
 			mouse.x = (event.clientX / 1400) * 2 - 1;
 			mouse.y = -(event.clientY / 1400) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
@@ -392,7 +392,7 @@ export default function StlViewer({
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
-					const intersectsGroup = raycaster?.intersectObject(element.children[0]);
+					const intersectsGroup = raycaster?.intersectObjects([element.children[0]]);
 					if (intersectsGroup?.length > 0) {
 						for (let index = 0; index < element.children.length; index++) {
 							const el = element.children[index];
