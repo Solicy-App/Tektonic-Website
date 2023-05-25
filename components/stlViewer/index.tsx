@@ -392,7 +392,7 @@ export default function StlViewer({
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
-					const intersectsGroup = raycaster?.intersectObjects([element.children[0]]);
+					const intersectsGroup = raycaster?.intersectObject(element.children[0]);
 					if (intersectsGroup?.length > 0) {
 						for (let index = 0; index < element.children.length; index++) {
 							const el = element.children[index];
