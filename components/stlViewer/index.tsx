@@ -126,7 +126,11 @@ export default function StlViewer({
 						orbitControls.enablePan = false;
 						orbitControls.enableRotate = false;
 					}
+					console.log(mouseType, element);
+					
 					if (mouseType == 'mousemove' && element['mousedown']) {
+						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+						
 						const movementScale = 0.085;
 						const worldCoordinates = new THREE.Vector3(mouse.x * 210, mouse.y * 205, 0);
 						worldCoordinates.unproject(camera);
