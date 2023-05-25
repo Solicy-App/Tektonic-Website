@@ -120,7 +120,7 @@ export default function StlViewer({
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
-					const intersectsGroup = raycaster?.intersectObject(element.children[0]);
+					const intersectsGroup = raycaster?.intersectObject(element.children[0], true);
 					console.log(intersectsGroup);
 					
 					if (mouseType == 'mousedown' && intersectsGroup.length > 0) {
