@@ -390,7 +390,7 @@ export default function StlViewer({
 					if (intersectsGroup?.length > 0) {
 						for (let index = 0; index < element.children.length; index++) {
 							const el = element.children[index];
-							if (el?.name == activeWing.name && el?.name?.search('angle') != -1) {
+							if (el?.name == activeWing.subName && el?.name?.search('angle') != -1) {
 								el.visible = true;
 							} else if (el?.name?.search('angle') != -1) {
 								el.visible = false;
