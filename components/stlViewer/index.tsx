@@ -116,6 +116,7 @@ export default function StlViewer({
 			mouse.y = -(event.clientY / 1400) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, camera);
+			console.log(mouse, camera);
 
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
@@ -388,6 +389,7 @@ export default function StlViewer({
 			mouse.x = (event.clientX / 1400) * 2 - 1;
 			mouse.y = -(event.clientY / 1400) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
+			
 			raycaster.setFromCamera(mouse, camera);
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
