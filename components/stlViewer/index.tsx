@@ -111,7 +111,7 @@ export default function StlViewer({
 			const cameraRotationMatrix = new THREE.Matrix4();
 			cameraRotationMatrix.extractRotation(camera.matrixWorld);
 			const positions = camera.position;
-			const mouse = new THREE.Vector3(5, 2);
+			const mouse = new THREE.Vector2(5, 2);
 			mouse.x = (event.clientX / 1400) * 2 - 1;
 			mouse.y = -(event.clientY / 1400) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
@@ -385,7 +385,7 @@ export default function StlViewer({
 				[coreModelMesh],
 				true
 			);
-			const mouse = new THREE.Vector3(5, 2);
+			const mouse = new THREE.Vector2(5, 2);
 			mouse.x = (event.clientX / 1400) * 2 - 1;
 			mouse.y = -(event.clientY / 1400) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
