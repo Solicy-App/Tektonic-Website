@@ -121,6 +121,8 @@ export default function StlViewer({
 				const element = scene.children[index];
 				if (element.type == 'Group') {
 					const intersectsGroup = raycaster?.intersectObject(element.children[0]);
+					console.log(intersectsGroup);
+					
 					if (mouseType == 'mousedown' && intersectsGroup.length > 0) {
 						element['mousedown'] = true;
 						orbitControls.enablePan = false;
