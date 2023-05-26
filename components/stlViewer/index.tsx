@@ -211,7 +211,7 @@ export default function StlViewer({
 
 				dragDirection = '';
 
-				if (mouseType == 'mousemove' && mesh.dragTop && mesh.dragTop.visible) {
+				if (mouseType == 'mousemove' && mesh.dragTop && mesh.top.visible) {
 					if (mouseLeaveX > event.clientX) {
 						mesh.element.rotateX(positions.x / 17500);
 						mesh.element.rotateZ(positions.z / 17500);
@@ -221,7 +221,7 @@ export default function StlViewer({
 					}
 				}
 
-				if (mouseType == 'mousemove' && mesh.dragBottom && mesh.dragBottom.visible) {
+				if (mouseType == 'mousemove' && mesh.dragBottom && mesh.bottom.visible) {
 					if (mouseLeaveX > event.clientX) {
 						mesh.element.rotateX((-1 * positions.x) / 17500);
 						mesh.element.rotateZ((-1 * positions.z) / 17500);
@@ -231,11 +231,11 @@ export default function StlViewer({
 					}
 				}
 
-				if (mouseType == 'mousemove' && mesh.dragLeft && mesh.dragLeft.visible) {
+				if (mouseType == 'mousemove' && mesh.dragLeft && mesh.left.visible) {
 					dragDirection = 'dragLeft';
 				}
 
-				if (mouseType == 'mousemove' && mesh.dragRight && mesh.dragRight.visible) {
+				if (mouseType == 'mousemove' && mesh.dragRight && mesh.right.visible) {
 					dragDirection = 'dragRight';
 				}
 
