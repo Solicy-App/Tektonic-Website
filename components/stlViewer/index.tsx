@@ -183,24 +183,6 @@ export default function StlViewer({
 					mesh.top.visible = false;
 					mesh.bottom.visible = false;
 				}
-				// } else {
-				// 	if (angleTopDegrees >= 1) {
-				// 		mesh.right.visible = true;
-				// 		mesh.left.visible = true;
-				// 		mesh.top.visible = false;
-				// 		mesh.bottom.visible = false;
-				// 	} else if (angleTopDegrees >= 0.17 && angleTopDegrees < 1) {
-				// 		mesh.right.visible = false;
-				// 		mesh.left.visible = false;
-				// 		mesh.top.visible = true;
-				// 		mesh.bottom.visible = true;
-				// 	} else {
-				// 		mesh.right.visible = false;
-				// 		mesh.left.visible = false;
-				// 		mesh.top.visible = false;
-				// 		mesh.bottom.visible = false;
-				// 	}
-				// }
 
 				if (intersectsBottom.length > 0) {
 					orbitControls.enableRotate = false;
