@@ -121,19 +121,13 @@ export default function StlViewer({
 				const element = scene.children[index];
 				if (element.type == 'Group') {
 					console.log('element.children[0]', element.children[0]);
-					const intersectsGroup = raycaster?.intersectObject(element.children[0], false);
-					console.log(intersectsGroup);
-					
+					const intersectsGroup = raycaster?.intersectObject(element.children[0] as THREE.Object3D);
 					if (mouseType == 'mousedown' && intersectsGroup.length > 0) {
 						element['mousedown'] = true;
 						orbitControls.enablePan = false;
 						orbitControls.enableRotate = false;
 					}
-					console.log(mouseType, 'element[mousedown],', element['mousedown']);
-					
 					if (mouseType == 'mousemove' && element['mousedown']) {
-						console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-						
 						const movementScale = 0.085;
 						const worldCoordinates = new THREE.Vector3(mouse.x * 210, mouse.y * 205, 0);
 						worldCoordinates.unproject(camera);
