@@ -120,9 +120,9 @@ export default function StlViewer({
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
-					console.log('element.children[0]', element.children[0]);
-					const intersectsGroup = raycaster?.intersectObject(element.children[0] as THREE.Object3D);
-					if (mouseType == 'mousedown' && intersectsGroup.length > 0) {
+					const boundingBox = new THREE.Box3().setFromObject(element);
+					// const intersectsGroup = raycaster?.intersectObject(element.children[0] as THREE.Object3D);
+					if (mouseType == 'mousedown' && raycaster.ray.intersectsBox(boundingBox)) {
 						element['mousedown'] = true;
 						orbitControls.enablePan = false;
 						orbitControls.enableRotate = false;
