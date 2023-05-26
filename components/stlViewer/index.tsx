@@ -112,17 +112,16 @@ export default function StlViewer({
 			cameraRotationMatrix.extractRotation(camera.matrixWorld);
 			const positions = camera.position;
 			const mouse = new THREE.Vector2(5, 2);
-			mouse.x = (event.clientX / 1400) * 2 - 1;
-			mouse.y = -(event.clientY / 1400) * 2 + 1;
+			mouse.x = (event.clientX / sizeX) * 2 - 1;
+			mouse.y = -(event.clientY / sizeY) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, camera);
 			
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
-					const boundingBox = new THREE.Box3().setFromObject(element);
-					// const intersectsGroup = raycaster?.intersectObject(element.children[0] as THREE.Object3D);
-					if (mouseType == 'mousedown' && raycaster.ray.intersectsBox(boundingBox)) {
+					const intersectsGroup = raycaster?.intersectObject(element.children[0] as THREE.Object3D);
+					if (mouseType == 'mousedown' && intersectsGroup?.length > 0) {
 						element['mousedown'] = true;
 						orbitControls.enablePan = false;
 						orbitControls.enableRotate = false;
@@ -380,8 +379,8 @@ export default function StlViewer({
 				true
 			);
 			const mouse = new THREE.Vector2(5, 2);
-			mouse.x = (event.clientX / 1400) * 2 - 1;
-			mouse.y = -(event.clientY / 1400) * 2 + 1;
+			mouse.x = (event.clientX / sizeX) * 2 - 1;
+			mouse.y = -(event.clientY / sizeY) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
 			
 			raycaster.setFromCamera(mouse, camera);
@@ -582,7 +581,6 @@ export default function StlViewer({
 					position: 'absolute',
 					top: '0px',
 					width: '100%',
-					padding: '10px',
 					boxSizing: 'border-box',
 					textAlign: 'center',
 					userSelect: 'none',
