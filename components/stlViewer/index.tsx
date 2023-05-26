@@ -116,7 +116,7 @@ export default function StlViewer({
 			mouse.y = -(event.clientY / sizeY) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouse, camera);
-			
+
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
 				if (element.type == 'Group') {
@@ -165,14 +165,14 @@ export default function StlViewer({
 				cameraToTop.normalize();
 				const angleTop = cameraToTop.angleTo(camera.getWorldDirection(new THREE.Vector3()));
 				const angleTopDegrees = THREE.MathUtils.radToDeg(angleTop);
+				var cameraDistance = camera.position.distanceTo(mesh.element.position);
 
-				// if (mesh.element.rotation._z > 0) {
-				if (angleTopDegrees >= 1.15 && angleTopDegrees <= 1.33) {
+				if (angleTopDegrees >= (325 / cameraDistance) * 1.05 && angleTopDegrees <= (325 / cameraDistance) * 1.40) {
 					mesh.right.visible = false;
 					mesh.left.visible = false;
 					mesh.top.visible = true;
 					mesh.bottom.visible = true;
-				} else if (angleTopDegrees >= 0.17 && angleTopDegrees < 1) {
+				} else if (angleTopDegrees >= (325 / cameraDistance) * 0.17 && angleTopDegrees < (325 / cameraDistance) * 1) {
 					mesh.right.visible = true;
 					mesh.left.visible = true;
 					mesh.top.visible = false;
@@ -364,7 +364,7 @@ export default function StlViewer({
 			mouse.x = (event.clientX / sizeX) * 2 - 1;
 			mouse.y = -(event.clientY / sizeY) * 2 + 1;
 			const raycaster = new THREE.Raycaster();
-			
+
 			raycaster.setFromCamera(mouse, camera);
 			for (let index = 0; index < scene.children.length; index++) {
 				const element = scene.children[index];
