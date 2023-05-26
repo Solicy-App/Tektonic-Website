@@ -127,7 +127,9 @@ export default function StlViewer({
 						orbitControls.enableRotate = false;
 					}
 					if (mouseType == 'mousemove' && element['mousedown']) {
-						const movementScale = 0.085;
+						var cameraDistance = camera.position.distanceTo(element.position);
+
+						const movementScale = (cameraDistance / 325) * 0.085;
 						const worldCoordinates = new THREE.Vector3(mouse.x * 210, mouse.y * 205, 0);
 						worldCoordinates.unproject(camera);
 						rotateGroup = false;
@@ -209,7 +211,7 @@ export default function StlViewer({
 
 				dragDirection = '';
 
-				if (mouseType == 'mousemove' && mesh.dragTop) {
+				if (mouseType == 'mousemove' && mesh.dragTop && mesh.dragTop.visible) {
 					if (mouseLeaveX > event.clientX) {
 						mesh.element.rotateX(positions.x / 17500);
 						mesh.element.rotateZ(positions.z / 17500);
@@ -219,7 +221,7 @@ export default function StlViewer({
 					}
 				}
 
-				if (mouseType == 'mousemove' && mesh.dragBottom) {
+				if (mouseType == 'mousemove' && mesh.dragBottom && mesh.dragBottom.visible) {
 					if (mouseLeaveX > event.clientX) {
 						mesh.element.rotateX((-1 * positions.x) / 17500);
 						mesh.element.rotateZ((-1 * positions.z) / 17500);
@@ -229,11 +231,11 @@ export default function StlViewer({
 					}
 				}
 
-				if (mouseType == 'mousemove' && mesh.dragLeft) {
+				if (mouseType == 'mousemove' && mesh.dragLeft && mesh.dragLeft.visible) {
 					dragDirection = 'dragLeft';
 				}
 
-				if (mouseType == 'mousemove' && mesh.dragRight) {
+				if (mouseType == 'mousemove' && mesh.dragRight && mesh.dragRight.visible) {
 					dragDirection = 'dragRight';
 				}
 

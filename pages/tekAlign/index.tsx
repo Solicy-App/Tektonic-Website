@@ -66,11 +66,13 @@ export default function TekAlign() {
 	}, [win])
 
 	return (
-		<div>
+		<div style={{
+			overflow: 'hidden'
+		}}>
 			{/* <TekAlignHeader /> */}
 			{/* <TekAlignPageContent/>   */}
 			{open &&
-				<StlViewer sizeX={window?.innerWidth - 20} sizeY={window?.innerHeight - 20} activeWing={wings[activeIndex]} wingsMesh={wings} />
+				<StlViewer sizeX={window?.innerWidth} sizeY={window?.innerHeight} activeWing={wings[activeIndex]} wingsMesh={wings} />
 			}
 			<ToolBarPieces
 				wings={wings}
