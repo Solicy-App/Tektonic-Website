@@ -213,21 +213,21 @@ export default function StlViewer({
 
 				if (mouseType == 'mousemove' && mesh.dragTop && mesh.top.visible) {
 					if (mouseLeaveX > event.clientX) {
-						mesh.element.rotateX(positions.x / 17500);
-						mesh.element.rotateZ(positions.z / 17500);
+						mesh.element.rotateX(positions.x / (17500 * (325 /cameraDistance)));
+						mesh.element.rotateZ(positions.z / 17500 * (325 /cameraDistance));
 					} else {
-						mesh.element.rotateX((-1 * positions.x) / 17500);
-						mesh.element.rotateZ((-1 * positions.z) / 17500);
+						mesh.element.rotateX((-1 * positions.x) / 17500 * (325 /cameraDistance));
+						mesh.element.rotateZ((-1 * positions.z) / 17500 * (325 /cameraDistance));
 					}
 				}
 
 				if (mouseType == 'mousemove' && mesh.dragBottom && mesh.bottom.visible) {
 					if (mouseLeaveX > event.clientX) {
-						mesh.element.rotateX((-1 * positions.x) / 17500);
-						mesh.element.rotateZ((-1 * positions.z) / 17500);
+						mesh.element.rotateX((-1 * positions.x) / 17500 * (325 /cameraDistance));
+						mesh.element.rotateZ((-1 * positions.z) / 17500 * (325 /cameraDistance));
 					} else {
-						mesh.element.rotateZ(positions.z / 17500);
-						mesh.element.rotateX(positions.x / 17500);
+						mesh.element.rotateZ(positions.z / 17500 * (325 /cameraDistance));
+						mesh.element.rotateX(positions.x / 17500 * (325 /cameraDistance));
 					}
 				}
 
@@ -244,10 +244,10 @@ export default function StlViewer({
 
 				switch (dragDirection) {
 					case 'dragLeft':
-						mesh.element.rotation.y += deltaX * rotationSpeed;
+						mesh.element.rotation.y += (deltaX * rotationSpeed) / (325 /cameraDistance);
 						break;
 					case 'dragRight':
-						mesh.element.rotation.y -= deltaX * rotationSpeed;
+						mesh.element.rotation.y -= (deltaX * rotationSpeed) / (325 /cameraDistance);
 						break;
 				}
 
